@@ -67,6 +67,7 @@ summary{cursor:pointer;font-weight:700;font-size:.88rem;color:#15803d}
   <button id="tOrders" class="on" onclick="tab('orders')">الطلبات</button>
   <button id="tStores" onclick="tab('stores')">المتاجر والمنتجات</button>
   <button id="tCodes" onclick="tab('codes')">أكواد الخصم</button>
+  <button id="tDrivers" onclick="tab('drivers')">المناديب</button>
   <button onclick="logout()">خروج</button>
  </div>
 </div></header>
@@ -78,7 +79,14 @@ const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
 const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
 // ============================================================
 let TOKEN=null, REFRESH=null;
-let ORDERS=[], STORES=[], CODES=[], cur='orders', selStore=null;
+let ORDERS=[], STORES=[], CODES=[], DRIVERS=[], cur='orders', selStore=null;
+const DRV_URL=location.href.replace(/[^\/]*$/,'driver.html?t=');
+function waNum(p){let d=String(p||'').replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
+function copyTxt(t,okMsg){
+ if(navigator.clipboard&&navigator.clipboard.writeText){
+  navigator.clipboard.writeText(t).then(()=>alert(okMsg)).catch(()=>prompt('انسخ اللينك ده:',t));
+ }else prompt('انسخ اللينك ده:',t);
+}
 const app=document.getElementById('app');
 const STATUSES=['جديد','مقبول','خرج للتوصيل','اتسلّم','ملغي'];
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
@@ -130,7 +138,7 @@ document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')
 async function showPanel(){
  document.getElementById('gate').style.display='none';
  document.getElementById('panel').style.display='block';
- await Promise.all([loadOrders(),loadStores(),loadCodes()]);
+ await Promise.all([loadOrders(),loadStores(),loadCodes(),loadDrivers()]);
  render();
 }
 function tab(t){
@@ -138,6 +146,7 @@ function tab(t){
  document.getElementById('tOrders').className=t==='orders'?'on':'';
  document.getElementById('tStores').className=t==='stores'?'on':'';
  document.getElementById('tCodes').className=t==='codes'?'on':'';
+ document.getElementById('tDrivers').className=t==='drivers'?'on':'';
  render();
 }
 async function loadOrders(){
@@ -164,7 +173,15 @@ async function loadCodes(){
  }catch(e){}
  if(cur==='codes')render();
 }
-function render(){cur==='orders'?renderOrders():cur==='stores'?renderStores():renderCodes()}
+async function loadDrivers(){
+ try{
+  const r=await api('/rest/v1/drivers?select=*&order=created_at',{headers:hdrs()});
+  if(!r.ok)throw 0;
+  DRIVERS=await r.json();
+ }catch(e){}
+ if(cur==='drivers')render();
+}
+function render(){cur==='orders'?renderOrders():cur==='stores'?renderStores():cur==='drivers'?renderDrivers():renderCodes()}
 function renderOrders(){
  app.innerHTML=`<div class="panel">
  <div class="refreshbar"><h2>📦 الطلبات (${ORDERS.length})</h2>
@@ -181,8 +198,11 @@ function renderOrders(){
   ${o.discount>0?`<div class="meta" style="color:#15803d;font-weight:700">🎟 خصم: −${o.discount} ج${o.discount_code?' ('+esc(o.discount_code)+')':''}</div>`:''}
   <div class="tot">الإجمالي: ${o.total} ج (شامل توصيل ${o.fee} ج)</div>
   <div class="drv">
-   <input id="dn-${o.id}" value="${esc(o.driver_name||'')}" placeholder="اسم المندوب">
-   <input id="dp-${o.id}" value="${esc(o.driver_phone||'')}" placeholder="موبايل المندوب" dir="ltr" inputmode="tel">
+   <select id="ds-${o.id}" class="st" style="width:100%">
+    <option value="" ${(!o.driver_id&&!o.driver_name)?'selected':''}>— بدون مندوب —</option>
+    ${DRIVERS.filter(d=>d.active||d.id===o.driver_id).map(d=>`<option value="${d.id}" ${d.id===o.driver_id?'selected':''}>🛵 ${esc(d.name)}${d.phone?' ('+esc(d.phone)+')':''}</option>`).join('')}
+    ${(!o.driver_id&&o.driver_name)?`<option value="" selected disabled>(مسجل يدوي: ${esc(o.driver_name)})</option>`:''}
+   </select>
    <button class="btn sm" onclick="setDriver(${o.id})">حفظ المندوب</button>
   </div>
  </div>`).join(''):'<div class="empty">مفيش طلبات لسه. أول ما عميل يطلب من الموقع هيظهر هنا.</div>'}
@@ -196,14 +216,66 @@ async function setStatus(id,v){
  }catch(e){alert('حصلت مشكلة في تحديث الحالة');loadOrders()}
 }
 async function setDriver(id){
- const n=document.getElementById('dn-'+id).value.trim();
- const p=document.getElementById('dp-'+id).value.trim();
+ const v=document.getElementById('ds-'+id).value;
+ const d=DRIVERS.find(x=>x.id===v);
+ const body=d?{driver_id:d.id,driver_name:d.name,driver_phone:d.phone||null}
+             :{driver_id:null,driver_name:null,driver_phone:null};
  try{
-  const r=await api('/rest/v1/orders?id=eq.'+id,{method:'PATCH',headers:hdrs(true),body:JSON.stringify({driver_name:n||null,driver_phone:p||null})});
+  const r=await api('/rest/v1/orders?id=eq.'+id,{method:'PATCH',headers:hdrs(true),body:JSON.stringify(body)});
   if(!r.ok)throw 0;
-  const o=ORDERS.find(x=>x.id===id);if(o){o.driver_name=n;o.driver_phone=p;}
-  alert('اتحفظ ✅ العميل هيشوف بيانات المندوب في صفحة المتابعة');
+  const o=ORDERS.find(x=>x.id===id);if(o)Object.assign(o,body);
+  alert(d?('اتحفظ ✅ الطلب بقى مع '+d.name+' — لو مبعتلوش اللينك قبل كده، انسخه من تاب المناديب')
+         :'اتشال المندوب من الطلب ✅');
  }catch(e){alert('حصلت مشكلة في حفظ المندوب')}
+}
+function renderDrivers(){
+ app.innerHTML=`<div class="panel">
+ <div class="refreshbar"><h2>🛵 المناديب (${DRIVERS.length})</h2>
+ <button class="btn sm gray" onclick="loadDrivers()">🔄 تحديث</button></div>
+ <div class="note">كل مندوب ليه <b>لينك خاص بيه</b>: بيفتحه يشوف الطلبات اللي عليه بس ويحدّث حالتها (خرج للتوصيل ← اتسلّم). اللينك زي كلمة سر — متبعتوش غير للمندوب نفسه.</div>
+ ${DRIVERS.length?`<table><tr><th>المندوب</th><th>الموبايل</th><th>الحالة</th><th></th></tr>
+ ${DRIVERS.map(d=>`<tr>
+  <td><b>${esc(d.name)}</b></td>
+  <td dir="ltr">${esc(d.phone||'—')}</td>
+  <td>${d.active?'✅ شغال':'⏸ متوقف'}</td>
+  <td style="white-space:nowrap">
+   <button class="btn sm" onclick="copyTxt(DRV_URL+'${d.token}','اللينك اتنسخ ✅ ابعته للمندوب')">نسخ اللينك</button>
+   ${d.phone?`<a class="btn sm" style="text-decoration:none;display:inline-block" target="_blank" href="https://wa.me/${waNum(d.phone)}?text=${encodeURIComponent('لينك صفحة طلباتك في أليكس شوب (ليك انت بس، متبعتوش لحد):\n'+DRV_URL+d.token)}">ابعت واتساب</a>`:''}
+   <button class="btn sm gray" onclick="toggleDriver('${d.id}',${!d.active})">${d.active?'أوقف':'شغّل'}</button>
+  </td></tr>`).join('')}
+ </table>`:'<div class="empty">مفيش مناديب لسه. ضيف أول مندوب من تحت.</div>'}
+ <details open><summary>➕ ضيف مندوب جديد</summary>
+  <div class="grid2">
+   <div><label>اسم المندوب</label><input id="ndName" placeholder="مثال: كابتن أحمد"></div>
+   <div><label>موبايل المندوب</label><input id="ndPhone" dir="ltr" inputmode="tel" placeholder="01xxxxxxxxx"></div>
+  </div>
+  <button class="btn" style="margin-top:10px" onclick="addDriver()">ضيف المندوب</button>
+ </details>
+ </div>`;
+}
+async function addDriver(){
+ const n=document.getElementById('ndName').value.trim();
+ const p=document.getElementById('ndPhone').value.trim();
+ if(!n)return alert('اكتب اسم المندوب');
+ try{
+  const r=await api('/rest/v1/drivers',{method:'POST',headers:{...hdrs(true),Prefer:'return=representation'},body:JSON.stringify({name:n,phone:p||null})});
+  if(!r.ok)throw 0;
+  const rows=await r.json();
+  await loadDrivers();
+  if(rows&&rows[0]&&rows[0].token){
+   copyTxt(DRV_URL+rows[0].token,'اتضاف ✅ واللينك اتنسخ — ابعته للمندوب دلوقتي');
+  }else{
+   alert('اتضاف ✅ انسخ اللينك من الجدول');
+  }
+ }catch(e){alert('حصلت مشكلة في إضافة المندوب')}
+}
+async function toggleDriver(id,on){
+ if(!on&&!confirm('إيقاف المندوب؟ لينكه هيقف على طول ومش هيقدر يفتح صفحته.'))return;
+ try{
+  const r=await api('/rest/v1/drivers?id=eq.'+id,{method:'PATCH',headers:hdrs(true),body:JSON.stringify({active:on})});
+  if(!r.ok)throw 0;
+  await loadDrivers();
+ }catch(e){alert('حصلت مشكلة في تحديث المندوب')}
 }
 function renderCodes(){
  app.innerHTML=`<div class="panel">
