@@ -39,12 +39,14 @@ main{max-width:720px;margin:0 auto;padding:16px}
 .note{text-align:center;color:#9ca3af;font-size:.75rem;margin-top:18px}
 .msg{border-radius:10px;padding:10px 14px;font-size:.85rem;font-weight:700;margin-bottom:12px;display:none}
 .msg.err{display:block;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+.msg.ok{display:block;background:#dcfce7;color:#166534;border:1px solid #86efac}
 .spin{text-align:center;color:#9ca3af;padding:40px 0}
 </style>
 </head>
 <body>
 <header><div class="wrap">
  <div class="logo">🛵 طلبات التوصيل<small id="drvName">أليكس شوب</small></div>
+ <button class="rbtn" id="dutyBtn" onclick="toggleDuty()">🟢 متاح</button>
  <button class="rbtn" onclick="load()">🔄 تحديث</button>
 </div></header>
 <main>
@@ -59,7 +61,7 @@ const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
 // ============================================================
 const TOKEN_PARAM=new URLSearchParams(location.search).get('t')||'';
 const app=document.getElementById('app');
-let DRIVER='',busy=false;
+let DRIVER='',DUTY=true,busy=false;
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function waNum(p){let d=String(p).replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
 async function rpc(fn,body){
@@ -74,12 +76,32 @@ function showMsg(t){
  const m=document.getElementById('msg');m.textContent=t;m.className='msg err';
  setTimeout(()=>{m.className='msg'},6000);
 }
+function showOk(t){
+ const m=document.getElementById('msg');m.textContent=t;m.className='msg ok';
+ setTimeout(()=>{m.className='msg'},6000);
+}
+function renderDuty(){
+ const b=document.getElementById('dutyBtn');
+ b.textContent=DUTY?'🟢 متاح':'🔴 مش متاح';b.style.opacity=DUTY?'1':'.75';
+}
+async function toggleDuty(){
+ const b=document.getElementById('dutyBtn');b.disabled=true;
+ try{
+  const d=await rpc('driver_set_duty',{p_token:TOKEN_PARAM,p_on_duty:!DUTY});
+  if(!d||!d.ok)throw 0;
+  DUTY=d.on_duty;renderDuty();
+  showOk(DUTY?'تمام ✅ انت متاح دلوقتي — الطلبات الجاهزة هتوصلك أوتوماتيك':'تمام ⏸ انت مش متاح — مش هيتعيّنلك طلبات جديدة');
+ }catch(e){showMsg('حصلت مشكلة — جرّب تاني')}
+ b.disabled=false;
+}
 async function load(){
  if(!TOKEN_PARAM){app.innerHTML='<div class="errbox"><h2>⚠️ اللينك ناقص</h2><p>افتح اللينك اللي وصلك كامل، فيه كود في آخره.</p></div>';return}
  try{
   const d=await rpc('get_driver_orders',{p_token:TOKEN_PARAM});
   if(!d||!d.ok){app.innerHTML='<div class="errbox"><h2>🔒 اللينك ده مش شغال</h2><p>ممكن يكون اتلغى أو اتبدل. كلم صاحب المتجر يبعتلك اللينك الجديد.</p></div>';return}
   DRIVER=d.driver||'';
+  DUTY=d.on_duty!==false;
+  renderDuty();
   document.getElementById('drvName').textContent='أهلاً '+DRIVER+' 👋';
   render(d.orders||[]);
  }catch(e){
