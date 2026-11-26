@@ -1,0 +1,126 @@
+-- ============================================
+-- أليكس شوب — خطوة قاعدة البيانات لصفحة المندوب
+-- (جدول المناديب + دوال آمنة للمندوب)
+-- الصق الكود ده كله في Supabase > SQL Editor ودوس Run
+-- ============================================
+
+-- 1) جدول المناديب: كل مندوب ليه رابط سري خاص بيه (token)
+--    التوكن بيتولّد عشوائي جوه قاعدة البيانات (48 حرف) — مستحيل يتخمّن
+create table if not exists public.drivers (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  phone text,
+  token text not null unique default encode(gen_random_bytes(24), 'hex'),
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+alter table public.drivers enable row level security;
+
+drop policy if exists "admin manages drivers" on public.drivers;
+create policy "admin manages drivers" on public.drivers
+  for all to authenticated using (true) with check (true);
+-- الزائر (anon) ملوش أي وصول لجدول المناديب خالص
+revoke all on public.drivers from anon;
+grant select, insert, update, delete on public.drivers to authenticated;
+
+-- 2) ربط كل طلب بالمندوب المسؤول عنه (علاقة حقيقية مش مجرد اسم مكتوب)
+alter table public.orders
+  add column if not exists driver_id uuid references public.drivers(id);
+create index if not exists orders_driver_id_idx on public.orders(driver_id);
+
+-- 3) دالة "طلبات المندوب": بالرابط السري بس، وترجع طلباته هو بس
+--    وبالحالات اللي تخصه بس (مقبول / خرج للتوصيل) — مش كل الطلبات
+create or replace function public.get_driver_orders(p_token text)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_driver public.drivers%rowtype;
+  v_orders json;
+begin
+  select * into v_driver
+    from public.drivers
+   where token = trim(coalesce(p_token, ''))
+     and active;
+  if not found then
+    return json_build_object('ok', false); -- رابط غلط أو مندوب متوقف: مفيش أي معلومة
+  end if;
+
+  select coalesce(json_agg(x order by x.created_at), '[]'::json)
+    into v_orders
+    from (
+      select o.id, o.customer_name, o.phone, o.address, o.payment,
+             o.items, o.fee, o.total, o.status, o.created_at
+        from public.orders o
+       where o.driver_id = v_driver.id
+         and o.status in ('مقبول', 'خرج للتوصيل')
+    ) x;
+
+  return json_build_object('ok', true, 'driver', v_driver.name, 'orders', v_orders);
+end;
+$$;
+
+-- 4) دالة تحديث الحالة من المندوب: للأمام بس، وعلى طلباته هو بس
+--    مقبول ← خرج للتوصيل ← اتسلّم ... ومفيش غيرهم
+create or replace function public.driver_set_status(
+  p_token text, p_order_id bigint, p_status text
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_driver_id uuid;
+  v_expected text;
+  v_n int;
+begin
+  select id into v_driver_id
+    from public.drivers
+   where token = trim(coalesce(p_token, ''))
+     and active;
+  if not found then
+    return json_build_object('ok', false, 'msg', 'الرابط ده مش شغال');
+  end if;
+
+  -- الانتقالات المسموحة للمندوب (للأمام بس)
+  if p_status = 'خرج للتوصيل' then
+    v_expected := 'مقبول';
+  elsif p_status = 'اتسلّم' then
+    v_expected := 'خرج للتوصيل';
+  else
+    return json_build_object('ok', false, 'msg', 'الحالة دي مش مسموحة للمندوب');
+  end if;
+
+  -- التحديث بيحصل بس لو الطلب بتاع المندوب ده وبالحالة المتوقعة
+  update public.orders
+     set status = p_status
+   where id = p_order_id
+     and driver_id = v_driver_id
+     and status = v_expected;
+  get diagnostics v_n = row_count;
+
+  if v_n = 0 then
+    return json_build_object('ok', false, 'msg', 'الطلب اتغيّر أو مش متاح — حدّث الصفحة');
+  end if;
+  return json_build_object('ok', true, 'status', p_status);
+end;
+$$;
+
+-- 5) صلاحيات التنفيذ: نقفل التلقائي بتاع PUBLIC الأول، وبعدين ندي المقصودين بس
+revoke execute on function public.get_driver_orders(text) from public;
+revoke execute on function public.driver_set_status(text, bigint, text) from public;
+grant execute on function public.get_driver_orders(text) to anon;
+grant execute on function public.get_driver_orders(text) to authenticated;
+grant execute on function public.driver_set_status(text, bigint, text) to anon;
+grant execute on function public.driver_set_status(text, bigint, text) to authenticated;
+
+-- 6) تحديث كاش Supabase عشان الدوال الجديدة تظهر فوراً
+notify pgrst, 'reload schema';
+
+-- ============================================
+-- خلص ✅ دلوقتي جدول المناديب جاهز والدوال شغالة
+-- الخطوة الجاية: رفع صفحة driver.html على GitHub
+-- ============================================
