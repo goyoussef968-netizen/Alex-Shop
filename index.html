@@ -306,6 +306,7 @@ function render(){
   const orders=getOrders();
   const name=(()=>{try{return localStorage.getItem('alexshop_name')||''}catch(e){return ''}})();
   const phone=(()=>{try{return localStorage.getItem('alexshop_phone')||''}catch(e){return ''}})();
+  const tok=getToken();
   const total=orders.reduce((a,o)=>a+(o.total||0),0);
   const since=orders.length?new Date(orders[orders.length-1].ts).toLocaleDateString('ar-EG',{month:'long',year:'numeric'}):'—';
   const initial=name?name.trim()[0]:'👤';
@@ -315,6 +316,16 @@ function render(){
    <div><div class="nm">${name?esc(name):'ضيفنا العزيز'}</div><div class="ph" dir="ltr">${phone?esc(phone):'—'}</div>
     <span class="tier">${tierOf(orders.length)}</span></div>
   </div>
+  ${tok?`<div class="panel" style="margin-bottom:12px"><h2 style="margin-bottom:6px">✓ مسجل دخولك</h2>
+   <div class="meta" style="margin-bottom:10px">حسابك محفوظ برقمك <b dir="ltr">${esc(phone)}</b> — تقدر تدخل عليه من أي جهاز</div>
+   <button class="cta ghost" onclick="doLogout()">تسجيل الخروج</button></div>`
+  :`<div class="panel" style="margin-bottom:12px"><h2 style="margin-bottom:6px">${authMode==='signup'?'🆕 اعمل حساب جديد':'🔐 سجل دخولك'}</h2>
+   ${authMode==='signup'?'<label>الاسم</label><input id="aName" placeholder="اسمك">':''}
+   <label>رقم الموبايل</label><input id="aPhone" inputmode="tel" placeholder="01xxxxxxxxx" value="${esc(phone)}">
+   <label>كلمة السر</label><input id="aPass" type="password" placeholder="6 حروف أو أرقام على الأقل">
+   <div class="err" id="eAuth"></div>
+   <button class="cta" id="authBtn" onclick="${authMode==='signup'?'doSignup()':'doLogin()'}">${authMode==='signup'?'إنشاء الحساب':'دخول'}</button>
+   <button class="cta ghost" onclick="toggleAuth()">${authMode==='signup'?'عندك حساب؟ سجل دخولك':'جديد عندنا؟ اعمل حساب'}</button></div>`}
   <div class="stats">
    <div class="stat"><div class="v">${orders.length}</div><div class="k">طلبات</div></div>
    <div class="stat"><div class="v">${total} ج</div><div class="k">إجمالي مشترياتك</div></div>
@@ -431,6 +442,57 @@ async function sendSupport(){
   e.classList.add('show');
  }
 }
+// ===== حساب العميل (دخول برقم الموبايل وكلمة سر) =====
+let authMode='login';
+function getToken(){try{return localStorage.getItem('alexshop_token')||''}catch(e){return ''}}
+function saveSession(t,ph,n){try{localStorage.setItem('alexshop_token',t);localStorage.setItem('alexshop_phone',ph);if(n)localStorage.setItem('alexshop_name',n)}catch(e){}}
+function toggleAuth(){authMode=authMode==='login'?'signup':'login';render()}
+function doLogin(){authSubmit('login_customer')}
+function doSignup(){authSubmit('signup_customer')}
+async function authSubmit(fn){
+ const ph=document.getElementById('aPhone').value.trim().replace(/\s/g,''),
+       pw=document.getElementById('aPass').value,
+       nmEl=document.getElementById('aName'),
+       nm=nmEl?nmEl.value.trim():'',
+       e=document.getElementById('eAuth'),
+       btn=document.getElementById('authBtn');
+ e.classList.remove('show');
+ if(!/^01[0-9]{9}$/.test(ph)){e.textContent='اكتب رقم موبايل صحيح (11 رقم يبدأ بـ 01)';e.classList.add('show');return}
+ if(pw.length<6){e.textContent='كلمة السر لازم تكون 6 حروف أو أرقام على الأقل';e.classList.add('show');return}
+ if(fn==='signup_customer'&&nm.length<2){e.textContent='اكتب اسمك';e.classList.add('show');return}
+ btn.disabled=true;btn.textContent='لحظة...';
+ try{
+  const body=fn==='signup_customer'?{p_phone:ph,p_password:pw,p_name:nm}:{p_phone:ph,p_password:pw};
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+fn,{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify(body)});
+  const d=await r.json().catch(()=>null);
+  if(!r.ok||!d||!d.ok){
+   const m={wrong_credentials:'الرقم أو كلمة السر مش صح',phone_taken:'الرقم ده مسجل قبل كده — جرّب تسجل دخولك',invalid_phone:'اكتب رقم موبايل صحيح',weak_password:'كلمة السر لازم تكون 6 حروف أو أرقام على الأقل'}[d&&d.error];
+   throw (m||'حصلت مشكلة — جرّب تاني');
+  }
+  saveSession(d.token,d.phone,d.name||nm);
+  authMode='login';render();
+ }catch(x){
+  btn.disabled=false;btn.textContent=fn==='signup_customer'?'إنشاء الحساب':'دخول';
+  e.textContent=(typeof x==='string'&&x)?x:'حصلت مشكلة — جرّب تاني';e.classList.add('show');
+ }
+}
+function doLogout(){
+ try{localStorage.removeItem('alexshop_token')}catch(e){}
+ authMode='login';render();
+}
+async function checkSession(){
+ const t=getToken();if(!t)return;
+ try{
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_session',{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({p_token:t})});
+  const d=await r.json().catch(()=>null);
+  if(!d||!d.ok){try{localStorage.removeItem('alexshop_token')}catch(e){}render();return}
+  try{localStorage.setItem('alexshop_phone',d.phone||'');if(d.name)localStorage.setItem('alexshop_name',d.name)}catch(e){}
+ }catch(e){}
+}
 let geoBusy=false;
 function useMyLocation(){
  if(geoBusy)return;
@@ -496,6 +558,7 @@ async function placeOrder(){
  }
 }
 loadStores();
+checkSession();
 </script>
 </body>
 </html>
