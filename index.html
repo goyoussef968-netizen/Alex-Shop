@@ -14,6 +14,7 @@ header .wrap{max-width:720px;margin:0 auto;display:flex;align-items:center;justi
 .logo{font-size:1.4rem;font-weight:800;cursor:pointer}
 .logo small{font-size:.7rem;font-weight:400;display:block;opacity:.9}
 #cartBtn{background:#fff;color:#16a34a;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.95rem;cursor:pointer;position:relative}
+#trackBtn{background:rgba(255,255,255,.18);color:#fff;border:1.5px solid #fff;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.85rem;cursor:pointer;margin-inline-end:8px}
 #cartCount{position:absolute;top:-6px;left:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:.75rem;display:flex;align-items:center;justify-content:center}
 main{max-width:720px;margin:0 auto;padding:16px}
 .hero{background:linear-gradient(135deg,#16a34a,#0d7a37);color:#fff;border-radius:16px;padding:24px 20px;margin-bottom:20px}
@@ -70,7 +71,7 @@ footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color
 <body>
 <header><div class="wrap">
 <div class="logo" onclick="go('home')">🛒 أليكس شوب<small>توصيل من محلات العجمي لباب بيتك</small></div>
-<button id="cartBtn" onclick="go('cart')">السلة <span id="cartCount">0</span></button>
+<div><button id="trackBtn" onclick="location.href='track.html'">📦 تابع طلبك</button><button id="cartBtn" onclick="go('cart')">السلة <span id="cartCount">0</span></button></div>
 </div></header>
 <main id="app"></main>
 <footer>Alex Shop — أليكس شوب، توصيل من محلات العجمي لباب بيتك.</footer>
@@ -195,7 +196,8 @@ function render(){
    <p style="color:#666;margin-top:8px">الإجمالي: <b>${o.total} ج</b> (${esc(o.payment)})</p>
    <p style="color:#666;margin-top:4px">⏱ التوصيل خلال 45-60 دقيقة إن شاء الله</p>
    <p style="font-size:.8rem;color:#666;margin-top:12px">هنتواصل معاك على رقمك لتأكيد الطلب.</p>
-   <button class="cta" onclick="go('home')">ارجع للرئيسية</button>
+   <button class="cta" onclick="location.href='track.html?o=${o.id}'">📦 تابع حالة طلبك</button>
+   <button class="cta" style="background:#e5e7eb;color:#374151;margin-top:8px" onclick="go('home')">ارجع للرئيسية</button>
   </div>`;
  }
 }
@@ -219,6 +221,7 @@ async function placeOrder(){
   if(!r.ok)throw 0;
   const newId=await r.json();
   setCart([]);
+  try{localStorage.setItem('alexshop_phone',ph);localStorage.setItem('alexshop_last_order',String(newId))}catch(e){}
   go('confirm',{id:'AX-'+newId,name:n,total:body.total,payment:pay});
  }catch(e){
   btn.disabled=false;btn.textContent='أكّد الطلب';
