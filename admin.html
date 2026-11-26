@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -14,7 +13,7 @@ header{background:#1f2937;color:#fff;padding:14px 16px;position:sticky;top:0;z-i
 header .wrap{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .logo{font-weight:800;font-size:1.2rem}
 .logo small{display:block;font-size:.7rem;font-weight:400;opacity:.8}
-.tabs{display:flex;gap:6px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
 .tabs button{background:#374151;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:.88rem}
 .tabs button.on{background:#16a34a}
 main{max-width:900px;margin:0 auto;padding:16px}
@@ -31,6 +30,7 @@ th,td{padding:9px 8px;text-align:right;border-bottom:1px solid #eee}
 th{background:#f9fafb;font-size:.8rem;color:#555}
 .btn{background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:.85rem}
 .btn.gray{background:#6b7280}.btn.red{background:#dc2626}.btn.sm{padding:4px 10px;font-size:.78rem}
+.btn:disabled{background:#9ca3af;cursor:not-allowed}
 input,select{width:100%;padding:9px 11px;border:1.5px solid #d1d5db;border-radius:9px;font-size:.95rem;background:#fff}
 label{display:block;font-weight:700;font-size:.82rem;margin:10px 0 3px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -40,18 +40,23 @@ label{display:block;font-weight:700;font-size:.82rem;margin:10px 0 3px}
 .gate{max-width:360px;margin:60px auto;background:#fff;border-radius:16px;padding:28px 22px;box-shadow:0 2px 12px rgba(0,0,0,.1);text-align:center}
 .gate h2{margin-bottom:6px}
 .gate p{font-size:.85rem;color:#666;margin-bottom:8px}
-.gate .warn{font-size:.72rem;color:#b45309;margin-top:10px}
+.gate .err{color:#dc2626;font-size:.8rem;margin-top:10px;display:none}
+.gate .err.show{display:block}
 details{margin-top:8px}
 summary{cursor:pointer;font-weight:700;font-size:.88rem;color:#15803d}
+.refreshbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 </style>
 </head>
 <body>
 <div class="gate" id="gate">
  <h2>🔐 لوحة الإدارة</h2>
  <p>أليكس شوب — Alex Shop</p>
- <input type="password" id="pin" placeholder="كلمة السر" style="text-align:center">
- <button class="btn" style="width:100%;margin-top:10px" onclick="login()">دخول</button>
- <div class="warn">⚠️ كلمة السر الافتراضية admin123 — غيّرها من الكود قبل النشر. دي حماية بسيطة للنسخة التجريبية مش أمان حقيقي.</div>
+ <label style="text-align:right">الإيميل</label>
+ <input type="email" id="email" placeholder="إيميل الأدمن" style="text-align:center" dir="ltr">
+ <label style="text-align:right">كلمة السر</label>
+ <input type="password" id="pw" placeholder="كلمة السر" style="text-align:center">
+ <button class="btn" id="loginBtn" style="width:100%;margin-top:12px" onclick="login()">دخول</button>
+ <div class="err" id="loginErr">الإيميل أو كلمة السر غلط</div>
 </div>
 <div id="panel" style="display:none">
 <header><div class="wrap">
@@ -59,72 +64,120 @@ summary{cursor:pointer;font-weight:700;font-size:.88rem;color:#15803d}
  <div class="tabs">
   <button id="tOrders" class="on" onclick="tab('orders')">الطلبات</button>
   <button id="tStores" onclick="tab('stores')">المتاجر والمنتجات</button>
+  <button onclick="logout()">خروج</button>
  </div>
 </div></header>
 <main id="app"></main>
 </div>
 <script>
-const K_STORES='alexshop_stores_v1', K_ORDERS='alexshop_orders_v1';
-const ADMIN_PIN='admin123'; // غيّر كلمة السر من هنا قبل النشر
-const DEFAULT_STORES=[
- {id:'s1',name:'سوبر ماركت النور',cat:'بقالة وسوبر ماركت',icon:'🏪',time:'30-45 دقيقة',min:50,products:[
-  {id:'p1',name:'أرز مصري فاخر',unit:'كيلو',price:38},{id:'p2',name:'سكر',unit:'كيلو',price:32},
-  {id:'p3',name:'زيت عباد الشمس',unit:'700 مل',price:75},{id:'p4',name:'مكرونة',unit:'400 جم',price:14},
-  {id:'p5',name:'شاي ليبتون',unit:'100 فتلة',price:85},{id:'p6',name:'جبنة رومي',unit:'كيلو',price:280}]},
- {id:'s2',name:'خضار وفاكهة الحاج سيد',cat:'خضار وفاكهة',icon:'🥬',time:'25-40 دقيقة',min:30,products:[
-  {id:'p1',name:'طماطم',unit:'كيلو',price:18},{id:'p2',name:'بطاطس',unit:'كيلو',price:16},
-  {id:'p3',name:'بصل',unit:'كيلو',price:20},{id:'p4',name:'موز',unit:'كيلو',price:35},
-  {id:'p5',name:'برتقال',unit:'كيلو',price:22},{id:'p6',name:'خيار',unit:'كيلو',price:20}]},
- {id:'s3',name:'مخبز العائلة',cat:'مخبوزات',icon:'🥐',time:'20-30 دقيقة',min:20,products:[
-  {id:'p1',name:'عيش بلدي',unit:'5 أرغفة',price:15},{id:'p2',name:'عيش فينو',unit:'5 أرغفة',price:20},
-  {id:'p3',name:'كرواسون بالشوكولاتة',unit:'قطعة',price:18},{id:'p4',name:'باتيه باللحمة',unit:'قطعة',price:22},
-  {id:'p5',name:'قطر الشام',unit:'كيلو',price:90}]},
- {id:'s4',name:'بن البرازيلي',cat:'قهوة ومحمصة',icon:'☕',time:'35-50 دقيقة',min:40,products:[
-  {id:'p1',name:'بن تركي سادة',unit:'ربع كيلو',price:95},{id:'p2',name:'بن فرنساوي',unit:'ربع كيلو',price:105},
-  {id:'p3',name:'مكسرات مشكلة',unit:'ربع كيلو',price:120},{id:'p4',name:'لب سوري',unit:'ربع كيلو',price:65}]}
-];
-function getStores(){try{const s=localStorage.getItem(K_STORES);if(s)return JSON.parse(s)}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_STORES))}
-function saveStores(s){localStorage.setItem(K_STORES,JSON.stringify(s))}
-function getOrders(){try{return JSON.parse(localStorage.getItem(K_ORDERS))||[]}catch(e){return[]}}
-function saveOrders(o){localStorage.setItem(K_ORDERS,JSON.stringify(o))}
-function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
-function login(){
- if(document.getElementById('pin').value===ADMIN_PIN){
-  document.getElementById('gate').style.display='none';
-  document.getElementById('panel').style.display='block';render();
- }else alert('كلمة السر غلط');
-}
-document.getElementById('pin').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-let cur='orders', selStore=null;
-function tab(t){cur=t;document.getElementById('tOrders').className=t==='orders'?'on':'';document.getElementById('tStores').className=t==='stores'?'on':'';render()}
-const STATUSES=['جديد','مقبول','خرج للتوصيل','اتسلّم','ملغي'];
+// ================== إعدادات قاعدة البيانات ==================
+const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
+const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
+// ============================================================
+let TOKEN=null, REFRESH=null;
+let ORDERS=[], STORES=[], cur='orders', selStore=null;
 const app=document.getElementById('app');
+const STATUSES=['جديد','مقبول','خرج للتوصيل','اتسلّم','ملغي'];
+function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function hdrs(json){const h={apikey:SUPABASE_KEY};if(TOKEN)h.Authorization='Bearer '+TOKEN;if(json)h['Content-Type']='application/json';return h}
+async function api(path,opts){
+ let r=await fetch(SUPABASE_URL+path,opts);
+ if(r.status===401&&REFRESH){
+  const ok=await refreshToken();
+  if(ok)r=await fetch(SUPABASE_URL+path,opts);else{logout();throw 0}
+ }
+ return r;
+}
+async function login(){
+ const em=document.getElementById('email').value.trim(),pw=document.getElementById('pw').value;
+ const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='جاري الدخول...';
+ document.getElementById('loginErr').classList.remove('show');
+ try{
+  const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({email:em,password:pw})});
+  if(!r.ok)throw 0;
+  const d=await r.json();
+  TOKEN=d.access_token;REFRESH=d.refresh_token;
+  sessionStorage.setItem('alexshop_admin',JSON.stringify({t:TOKEN,r:REFRESH}));
+  showPanel();
+ }catch(e){
+  document.getElementById('loginErr').classList.add('show');
+ }
+ btn.disabled=false;btn.textContent='دخول';
+}
+async function refreshToken(){
+ try{
+  const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({refresh_token:REFRESH})});
+  if(!r.ok)return false;
+  const d=await r.json();
+  TOKEN=d.access_token;REFRESH=d.refresh_token;
+  sessionStorage.setItem('alexshop_admin',JSON.stringify({t:TOKEN,r:REFRESH}));
+  return true;
+ }catch(e){return false}
+}
+function logout(){
+ TOKEN=null;REFRESH=null;sessionStorage.removeItem('alexshop_admin');
+ document.getElementById('panel').style.display='none';
+ document.getElementById('gate').style.display='block';
+}
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+async function showPanel(){
+ document.getElementById('gate').style.display='none';
+ document.getElementById('panel').style.display='block';
+ await Promise.all([loadOrders(),loadStores()]);
+ render();
+}
+function tab(t){cur=t;document.getElementById('tOrders').className=t==='orders'?'on':'';document.getElementById('tStores').className=t==='stores'?'on':'';render()}
+async function loadOrders(){
+ try{
+  const r=await api('/rest/v1/orders?order=created_at.desc',{headers:hdrs()});
+  if(!r.ok)throw 0;
+  ORDERS=await r.json();
+ }catch(e){}
+ if(cur==='orders')render();
+}
+async function loadStores(){
+ try{
+  const r=await api('/rest/v1/stores?select=*&order=name',{headers:hdrs()});
+  if(!r.ok)throw 0;
+  STORES=(await r.json()).map(x=>({id:x.id,name:x.name,cat:x.cat,icon:x.icon,time:x.delivery_time,min:x.min_order,products:x.products||[]}));
+ }catch(e){}
+ if(cur==='stores')render();
+}
 function render(){cur==='orders'?renderOrders():renderStores()}
 function renderOrders(){
- const orders=getOrders();
- app.innerHTML=`<div class="panel"><h2 style="margin-bottom:10px">📦 الطلبات (${orders.length})</h2>
- <div class="note">الطلبات بتتسجل في متصفح العميل على نفس الدومين (نسخة تجريبية بدون سيرفر). عشان تشوف طلبات العملاء الحقيقيين محتاج قاعدة بيانات — دي مرحلة لاحقة.</div>
- ${orders.length?orders.map((o,i)=>`
+ app.innerHTML=`<div class="panel">
+ <div class="refreshbar"><h2>📦 الطلبات (${ORDERS.length})</h2>
+ <button class="btn sm gray" onclick="loadOrders()">🔄 تحديث</button></div>
+ ${ORDERS.length?ORDERS.map(o=>`
  <div class="order">
-  <div class="top"><span class="id">${esc(o.id)}</span>
-   <select class="st" onchange="setStatus(${i},this.value)">
+  <div class="top"><span class="id">AX-${o.id}</span>
+   <select class="st" onchange="setStatus(${o.id},this.value)">
    ${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></div>
-  <div class="meta">👤 ${esc(o.name)} · 📞 ${esc(o.phone)} · 💳 ${esc(o.payment)}</div>
+  <div class="meta">👤 ${esc(o.customer_name)} · 📞 ${esc(o.phone)} · 💳 ${esc(o.payment)}</div>
   <div class="meta">📍 ${esc(o.address)}</div>
-  <div class="meta">🕐 ${new Date(o.createdAt).toLocaleString('ar-EG')}</div>
-  <div class="items">${o.items.map(x=>`${esc(x.name)} × ${x.qty} (${x.price*x.qty} ج) — ${esc(x.store)}`).join('<br>')}</div>
+  <div class="meta">🕐 ${new Date(o.created_at).toLocaleString('ar-EG')}</div>
+  <div class="items">${(o.items||[]).map(x=>`${esc(x.name)} × ${x.qty} (${x.price*x.qty} ج) — ${esc(x.store)}`).join('<br>')}</div>
   <div class="tot">الإجمالي: ${o.total} ج (شامل توصيل ${o.fee} ج)</div>
- </div>`).join(''):'<div class="empty">مفيش طلبات لسه.<br>جرّب اعمل طلب من صفحة العميل (index.html) على نفس المتصفح وهيظهر هنا.</div>'}
+ </div>`).join(''):'<div class="empty">مفيش طلبات لسه. أول ما عميل يطلب من الموقع هيظهر هنا.</div>'}
  </div>`;
 }
-function setStatus(i,v){const o=getOrders();o[i].status=v;saveOrders(o)}
+async function setStatus(id,v){
+ const o=ORDERS.find(x=>x.id===id);if(o)o.status=v;
+ try{
+  const r=await api('/rest/v1/orders?id=eq.'+id,{method:'PATCH',headers:hdrs(true),body:JSON.stringify({status:v})});
+  if(!r.ok)throw 0;
+ }catch(e){alert('حصلت مشكلة في تحديث الحالة');loadOrders()}
+}
 function renderStores(){
- const stores=getStores();
  app.innerHTML=`
  <div class="panel">
- <h2 style="margin-bottom:10px">🏪 المتاجر (${stores.length})</h2>
+ <h2 style="margin-bottom:10px">🏪 المتاجر (${STORES.length})</h2>
  <table><tr><th>المتجر</th><th>القسم</th><th>وقت التوصيل</th><th>حد أدنى</th><th></th></tr>
- ${stores.map(s=>`<tr>
+ ${STORES.map(s=>`<tr>
   <td><b>${s.icon||'🏪'} ${esc(s.name)}</b><br><small style="color:#888">${s.products.length} منتج</small></td>
   <td>${esc(s.cat)}</td><td>${esc(s.time)}</td><td>${s.min} ج</td>
   <td><button class="btn sm" onclick="editStore('${s.id}')">منتجات</button>
@@ -140,7 +193,7 @@ function renderStores(){
   <button class="btn" style="margin-top:10px" onclick="addStore()">ضيف المتجر</button>
  </details>
  </div>
- ${selStore?renderProducts(stores.find(s=>s.id===selStore)):''}`;
+ ${selStore?renderProducts(STORES.find(s=>s.id===selStore)):''}`;
 }
 function renderProducts(s){
  if(!s)return'';
@@ -162,28 +215,48 @@ function renderProducts(s){
  </div>`;
 }
 function editStore(id){selStore=id;render()}
-function addStore(){
+async function addStore(){
  const n=document.getElementById('nsName').value.trim();if(!n)return alert('اكتب اسم المتجر');
- const s=getStores();
- s.push({id:'s'+Date.now(),name:n,cat:document.getElementById('nsCat').value.trim()||'عام',icon:'🏪',
-  time:document.getElementById('nsTime').value.trim()||'30-45 دقيقة',
-  min:parseFloat(document.getElementById('nsMin').value)||0,products:[]});
- saveStores(s);render();
+ const row={id:'s'+Date.now(),name:n,cat:document.getElementById('nsCat').value.trim()||'عام',icon:'🏪',
+  delivery_time:document.getElementById('nsTime').value.trim()||'30-45 دقيقة',
+  min_order:parseFloat(document.getElementById('nsMin').value)||0,products:[]};
+ try{
+  const r=await api('/rest/v1/stores',{method:'POST',headers:hdrs(true),body:JSON.stringify(row)});
+  if(!r.ok)throw 0;
+  await loadStores();
+ }catch(e){alert('حصلت مشكلة في إضافة المتجر')}
 }
-function delStore(id){if(!confirm('تحذف المتجر وكل منتجاته؟'))return;saveStores(getStores().filter(s=>s.id!==id));if(selStore===id)selStore=null;render()}
-function addProd(sid){
- const s=getStores();const st=s.find(x=>x.id===sid);if(!st)return;
+async function delStore(id){
+ if(!confirm('تحذف المتجر وكل منتجاته؟'))return;
+ try{
+  const r=await api('/rest/v1/stores?id=eq.'+id,{method:'DELETE',headers:hdrs()});
+  if(!r.ok)throw 0;
+  if(selStore===id)selStore=null;
+  await loadStores();
+ }catch(e){alert('حصلت مشكلة في حذف المتجر')}
+}
+async function saveProducts(s){
+ const r=await api('/rest/v1/stores?id=eq.'+s.id,{method:'PATCH',headers:hdrs(true),body:JSON.stringify({products:s.products})});
+ if(!r.ok)throw 0;
+}
+async function addProd(sid){
+ const st=STORES.find(x=>x.id===sid);if(!st)return;
  const n=document.getElementById('npName').value.trim(),u=document.getElementById('npUnit').value.trim(),
        pr=parseFloat(document.getElementById('npPrice').value);
  if(!n||!u||isNaN(pr))return alert('كمّل بيانات المنتج');
  st.products.push({id:'p'+Date.now(),name:n,unit:u,price:pr});
- saveStores(s);render();
+ try{await saveProducts(st);await loadStores()}catch(e){alert('حصلت مشكلة في إضافة المنتج');await loadStores()}
 }
-function delProd(sid,pid){
- const s=getStores();const st=s.find(x=>x.id===sid);if(!st)return;
- st.products=st.products.filter(p=>p.id!==pid);saveStores(s);render();
+async function delProd(sid,pid){
+ const st=STORES.find(x=>x.id===sid);if(!st)return;
+ st.products=st.products.filter(p=>p.id!==pid);
+ try{await saveProducts(st);await loadStores()}catch(e){alert('حصلت مشكلة في حذف المنتج');await loadStores()}
 }
+// لو كان مسجل دخول قبل كده في نفس الجلسة
+try{
+ const s=JSON.parse(sessionStorage.getItem('alexshop_admin'));
+ if(s&&s.t){TOKEN=s.t;REFRESH=s.r;showPanel()}
+}catch(e){}
 </script>
 </body>
 </html>
-
