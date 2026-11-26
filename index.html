@@ -63,6 +63,11 @@ body.light .stepper .q{color:var(--gold)}
 .cta{display:block;width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--golddk);border:none;border-radius:999px;padding:14px;font-size:1.02rem;font-weight:800;cursor:pointer;margin-top:14px;box-shadow:0 6px 20px rgba(212,175,55,.22)}
 .cta:disabled{background:#6b7280;color:#e5e7eb;cursor:not-allowed;box-shadow:none}
 .cta.ghost{background:transparent;color:var(--text);border:1px solid var(--border2);box-shadow:none}
+.locbtn{display:block;width:100%;background:transparent;color:var(--gold);border:1.5px solid var(--border2);border-radius:999px;padding:12px;font-weight:800;font-size:.95rem;cursor:pointer;margin-top:4px}
+.locbtn:disabled{opacity:.6;cursor:wait}
+.locmsg{font-size:.82rem;min-height:1.1em;margin-top:6px;color:var(--muted);text-align:center}
+.locmsg.ok{color:var(--green)}
+.locmsg.warn{color:var(--gold2)}
 label{display:block;font-weight:700;font-size:.86rem;margin:12px 0 4px}
 input,select{width:100%;padding:11px 12px;border:1.5px solid var(--border2);border-radius:12px;font-size:1rem;background:var(--inputbg);color:var(--text)}
 input:focus{outline:none;border-color:var(--gold)}
@@ -194,6 +199,7 @@ function getArea(){try{return localStorage.getItem(K_AREA)||''}catch(e){return '
 function saveArea(){const v=document.getElementById('fArea').value.trim();try{if(v)localStorage.setItem(K_AREA,v);else localStorage.removeItem(K_AREA)}catch(e){}render()}
 function go(v,arg){state={view:v,arg};window.scrollTo(0,0);render()}
 let state={view:'home'};
+let geoLat=null,geoLng=null;
 const app=document.getElementById('app');
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function markTab(){
@@ -268,6 +274,9 @@ function render(){
    <label>الاسم</label><input id="fName" placeholder="اسمك الكامل" value="${esc(savedName)}"><div class="err" id="eName">اكتب اسمك</div>
    <label>رقم الموبايل</label><input id="fPhone" inputmode="tel" placeholder="01xxxxxxxxx" value="${esc(savedPhone)}"><div class="err" id="ePhone">اكتب رقم موبايل صحيح (11 رقم يبدأ بـ 01)</div>
    <label>العنوان بالتفصيل</label><input id="fAddr" placeholder="المنطقة، الشارع، رقم العمارة والشقة" value="${esc(savedArea)}"><div class="err" id="eAddr">اكتب العنوان</div>
+   <label>موقعك على الخريطة (اختياري)</label>
+   <button type="button" class="locbtn" id="locBtn" onclick="useMyLocation()">${geoLat!=null?'📍 حدّث مكاني':'📍 استخدم مكاني'}</button>
+   <div class="locmsg ${geoLat!=null?'ok':''}" id="locMsg">${geoLat!=null?'✓ اتحدد مكانك — هيتبعت مع طلبك للأدمن والكابتن':''}</div>
    <label>طريقة الدفع</label>
    <div class="pay">
     <label class="opt"><input type="radio" name="pay" value="كاش عند الاستلام" checked><span>💵 كاش عند الاستلام</span></label>
@@ -386,6 +395,18 @@ async function applyDiscount(){
  }
 }
 function rmDisc(){setDisc(null);render()}
+function useMyLocation(){
+ const btn=document.getElementById('locBtn'),msg=document.getElementById('locMsg');
+ if(!navigator.geolocation){msg.textContent='متصفحك مش بيدعم تحديد الموقع — طلبك هيكمل عادي من غيره';msg.className='locmsg warn';return}
+ btn.disabled=true;msg.textContent='⏳ بنحدد مكانك…';msg.className='locmsg';
+ navigator.geolocation.getCurrentPosition(
+  pos=>{geoLat=+pos.coords.latitude.toFixed(6);geoLng=+pos.coords.longitude.toFixed(6);
+   btn.disabled=false;btn.textContent='📍 حدّث مكاني';
+   msg.textContent='✓ اتحدد مكانك — هيتبعت مع طلبك للأدمن والكابتن';msg.className='locmsg ok';},
+  ()=>{geoLat=null;geoLng=null;btn.disabled=false;
+   msg.textContent='مقدرناش نحدد مكانك — طلبك هيكمل عادي من غير موقع 📦';msg.className='locmsg warn';},
+  {enableHighAccuracy:true,timeout:15000,maximumAge:60000});
+}
 async function placeOrder(){
  const n=document.getElementById('fName').value.trim(),
        ph=document.getElementById('fPhone').value.trim(),
@@ -404,10 +425,10 @@ async function placeOrder(){
  try{
   const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/place_order',{method:'POST',
    headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
-   body:JSON.stringify({p_customer_name:n,p_phone:ph,p_address:a,p_payment:pay,p_items:items,p_subtotal:sub,p_fee:fee(),p_total:total,p_discount_code:d?d.code:null})});
+   body:JSON.stringify({p_customer_name:n,p_phone:ph,p_address:a,p_payment:pay,p_items:items,p_subtotal:sub,p_fee:fee(),p_total:total,p_discount_code:d?d.code:null,p_lat:geoLat,p_lng:geoLng})});
   if(!r.ok)throw 0;
   const newId=await r.json();
-  setCart([]);setDisc(null);
+  setCart([]);setDisc(null);geoLat=null;geoLng=null;
   try{
    localStorage.setItem('alexshop_phone',ph);
    localStorage.setItem('alexshop_name',n);
