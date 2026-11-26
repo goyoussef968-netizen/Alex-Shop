@@ -85,7 +85,7 @@ const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
 const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
 // رقم واتساب الدعم بالكود الدولي من غير + ومن غير أصفار الأول — مثال: 201012345678
 // لو سيبته فاضي زرار الدعم مش هيظهر
-const SUPPORT_WA='';
+const SUPPORT_WA='201202255463';
 // ============================================================
 const K_CART='alexshop_cart_v1';
 const K_DISC='alexshop_discount';
@@ -224,9 +224,9 @@ function render(){
 async function applyDiscount(){
  const inp=document.getElementById('fDisc');
  const code=inp.value.trim();
- const msg=document.getElementById('discMsg');msg.classList.remove('show');
  if(!code)return;
  const btn=document.getElementById('discBtn');btn.disabled=true;btn.textContent='بنشيك...';
+ let errText=null;
  try{
   const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/check_discount',{method:'POST',
    headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
@@ -235,17 +235,18 @@ async function applyDiscount(){
   const v=await r.json();
   if(v===null||typeof v!=='number'){
    setDisc(null);
-   msg.textContent='الكود ده مش صح أو مش شغال دلوقتي';
-   msg.classList.add('show');
+   errText='الكود ده مش صح أو مش شغال دلوقتي';
   }else{
    setDisc({code:code.toUpperCase(),value:v});
   }
  }catch(e){
-  msg.textContent='حصلت مشكلة في الاتصال. اتأكد من الإنترنت وجرب تاني.';
-  msg.classList.add('show');
+  errText='حصلت مشكلة في الاتصال. اتأكد من الإنترنت وجرب تاني.';
  }
- btn.disabled=false;btn.textContent='طبّق';
  render();
+ if(errText){
+  const m=document.getElementById('discMsg');
+  if(m){m.textContent=errText;m.classList.add('show');}
+ }
 }
 function rmDisc(){setDisc(null);render()}
 async function placeOrder(){
