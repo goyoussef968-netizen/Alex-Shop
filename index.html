@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -34,7 +33,7 @@ h2.sec{font-size:1.15rem;margin:18px 0 12px}
 .prod .price{color:#15803d;font-weight:700;font-size:.9rem;margin-top:2px}
 .addbtn{background:#16a34a;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:.9rem}
 .stepper{display:flex;align-items:center;gap:10px}
-.stepper button{width:30px;height:30px;border-radius:8px;border:1px solid #16a34a;background:#fff;color:#16a34a;font-size:1.1rem;font-weight:800;cursor:pointer;line-height:1}
+.stepper button{width:30px;height:30px;border-radius:8px;border:1.5px solid #16a34a;background:#fff;color:#16a34a;font-size:1.1rem;font-weight:800;cursor:pointer;line-height:1}
 .stepper .q{font-weight:800;min-width:18px;text-align:center}
 .panel{background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px}
 .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
@@ -59,13 +58,13 @@ input:focus{outline:none;border-color:#16a34a}
 .confirm .check{width:74px;height:74px;border-radius:50%;background:#16a34a;color:#fff;font-size:2.2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
 .confirm h2{margin-bottom:8px}
 .confirm .num{background:#e8f7ee;color:#15803d;font-weight:800;border-radius:10px;padding:8px 18px;display:inline-block;margin:10px 0;font-size:1.1rem}
-.note{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:10px 14px;font-size:.8rem;margin-bottom:14px}
 .empty{text-align:center;color:#888;padding:40px 0}
 footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color:#999;font-size:.75rem}
 .how{display:flex;gap:10px;margin-bottom:8px}
 .how .step{flex:1;background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .how .step .n{width:30px;height:30px;border-radius:50%;background:#16a34a;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 6px}
 .how .step p{font-size:.78rem;font-weight:600}
+.offline{background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;border-radius:10px;padding:10px 14px;font-size:.8rem;margin-bottom:14px;display:none}
 </style>
 </head>
 <body>
@@ -74,9 +73,13 @@ footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color
 <button id="cartBtn" onclick="go('cart')">السلة <span id="cartCount">0</span></button>
 </div></header>
 <main id="app"></main>
-<footer>Alex Shop — نسخة تجريبية. المتاجر والأسعار بيانات توضيحية ولا يتم إرسال أي طلب حقيقي.</footer>
+<footer>Alex Shop — أليكس شوب، توصيل من محلات العجمي لباب بيتك.</footer>
 <script>
-const K_STORES='alexshop_stores_v1', K_CART='alexshop_cart_v1', K_ORDERS='alexshop_orders_v1';
+// ================== إعدادات قاعدة البيانات ==================
+const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
+const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
+// ============================================================
+const K_CART='alexshop_cart_v1';
 const DEFAULT_STORES=[
  {id:'s1',name:'سوبر ماركت النور',cat:'بقالة وسوبر ماركت',icon:'🏪',time:'30-45 دقيقة',min:50,products:[
   {id:'p1',name:'أرز مصري فاخر',unit:'كيلو',price:38},{id:'p2',name:'سكر',unit:'كيلو',price:32},
@@ -94,7 +97,17 @@ const DEFAULT_STORES=[
   {id:'p1',name:'بن تركي سادة',unit:'ربع كيلو',price:95},{id:'p2',name:'بن فرنساوي',unit:'ربع كيلو',price:105},
   {id:'p3',name:'مكسرات مشكلة',unit:'ربع كيلو',price:120},{id:'p4',name:'لب سوري',unit:'ربع كيلو',price:65}]}
 ];
-function getStores(){try{const s=localStorage.getItem(K_STORES);if(s)return JSON.parse(s)}catch(e){}return DEFAULT_STORES}
+let STORES=DEFAULT_STORES;
+async function loadStores(){
+ try{
+  const r=await fetch(SUPABASE_URL+'/rest/v1/stores?select=*&order=name',{headers:{apikey:SUPABASE_KEY}});
+  if(!r.ok)throw 0;
+  const d=await r.json();
+  if(d.length)STORES=d.map(x=>({id:x.id,name:x.name,cat:x.cat,icon:x.icon,time:x.delivery_time,min:x.min_order,products:x.products||[]}));
+ }catch(e){/* لو مفيش نت نعرض البيانات الافتراضية */}
+ render();
+}
+function getStores(){return STORES}
 function getCart(){try{return JSON.parse(localStorage.getItem(K_CART))||[]}catch(e){return[]}}
 function setCart(c){localStorage.setItem(K_CART,JSON.stringify(c));updateCount()}
 function updateCount(){document.getElementById('cartCount').textContent=getCart().reduce((a,i)=>a+i.qty,0)}
@@ -113,7 +126,6 @@ function render(){
   const stores=getStores();
   app.innerHTML=`
   <div class="hero"><h1>أهلاً بيك في أليكس شوب 👋</h1><p>اطلب أكل وبقالة من محلات العجمي، ويوصلك لباب البيت.</p></div>
-  <div class="note">نسخة تجريبية: المتاجر والأسعار بيانات توضيحية، ومفيش طلب حقيقي بيتبعت.</div>
   <h2 class="sec">إزاي بيشتغل؟</h2>
   <div class="how">
    <div class="step"><div class="n">1</div><p>اختار المحل</p></div>
@@ -169,7 +181,7 @@ function render(){
     <label class="opt"><input type="radio" name="pay" value="كاش عند الاستلام" checked><span>💵 كاش عند الاستلام</span></label>
     <label class="opt"><input type="radio" name="pay" value="فودافون كاش"><span>📱 فودافون كاش</span></label>
    </div>
-   <button class="cta" onclick="placeOrder()">أكّد الطلب</button>
+   <button class="cta" id="orderBtn" onclick="placeOrder()">أكّد الطلب</button>
   </div>`;
  }
  else if(state.view==='confirm'){
@@ -182,12 +194,12 @@ function render(){
    <div class="num">${o.id}</div>
    <p style="color:#666;margin-top:8px">الإجمالي: <b>${o.total} ج</b> (${esc(o.payment)})</p>
    <p style="color:#666;margin-top:4px">⏱ التوصيل خلال 45-60 دقيقة إن شاء الله</p>
-   <p style="font-size:.8rem;color:#b45309;margin-top:12px">دي نسخة تجريبية — مفيش طلب حقيقي اتبعت لأي محل.</p>
+   <p style="font-size:.8rem;color:#666;margin-top:12px">هنتواصل معاك على رقمك لتأكيد الطلب.</p>
    <button class="cta" onclick="go('home')">ارجع للرئيسية</button>
   </div>`;
  }
 }
-function placeOrder(){
+async function placeOrder(){
  const n=document.getElementById('fName').value.trim(),
        ph=document.getElementById('fPhone').value.trim(),
        a=document.getElementById('fAddr').value.trim();
@@ -195,17 +207,25 @@ function placeOrder(){
  const chk=(cond,id)=>{document.getElementById(id).classList.toggle('show',!cond);if(!cond)ok=false};
  chk(n.length>=2,'eName');chk(/^01[0-9]{9}$/.test(ph.replace(/\s/g,'')),'ePhone');chk(a.length>=5,'eAddr');
  if(!ok)return;
+ const btn=document.getElementById('orderBtn');btn.disabled=true;btn.textContent='جاري إرسال الطلب...';
  const c=getCart();let sub=0;
  const items=c.map(i=>{const p=findProd(i.id);sub+=p.price*i.qty;return{name:p.name,price:p.price,qty:i.qty,store:p.storeName}});
  const pay=document.querySelector('input[name=pay]:checked').value;
- const order={id:'AX-'+Math.floor(1000+Math.random()*9000),name:n,phone:ph,address:a,payment:pay,
-  items,subtotal:sub,fee:fee(),total:sub+fee(),status:'جديد',createdAt:new Date().toISOString()};
- const orders=JSON.parse(localStorage.getItem(K_ORDERS)||'[]');orders.unshift(order);
- localStorage.setItem(K_ORDERS,JSON.stringify(orders));
- setCart([]);go('confirm',order);
+ const body={customer_name:n,phone:ph,address:a,payment:pay,items:items,subtotal:sub,fee:fee(),total:sub+fee()};
+ try{
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/place_order',{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({p_customer_name:n,p_phone:ph,p_address:a,p_payment:pay,p_items:items,p_subtotal:sub,p_fee:fee(),p_total:sub+fee()})});
+  if(!r.ok)throw 0;
+  const newId=await r.json();
+  setCart([]);
+  go('confirm',{id:'AX-'+newId,name:n,total:body.total,payment:pay});
+ }catch(e){
+  btn.disabled=false;btn.textContent='أكّد الطلب';
+  alert('حصلت مشكلة في إرسال الطلب. اتأكد من الإنترنت وجرب تاني.');
+ }
 }
-render();
+loadStores();
 </script>
 </body>
 </html>
-
