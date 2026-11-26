@@ -67,6 +67,7 @@ summary{cursor:pointer;font-weight:700;font-size:.88rem;color:#15803d}
   <button id="tOrders" class="on" onclick="tab('orders')">الطلبات</button>
   <button id="tStores" onclick="tab('stores')">المتاجر والمنتجات</button>
   <button id="tCodes" onclick="tab('codes')">أكواد الخصم</button>
+  <button id="tSupport" onclick="tab('support')">💬 الدعم</button>
   <button id="tDrivers" onclick="tab('drivers')">المناديب</button>
   <button onclick="logout()">خروج</button>
  </div>
@@ -79,7 +80,7 @@ const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
 const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
 // ============================================================
 let TOKEN=null, REFRESH=null;
-let ORDERS=[], STORES=[], CODES=[], DRIVERS=[], cur='orders', selStore=null;
+let ORDERS=[], STORES=[], CODES=[], DRIVERS=[], MSGS=[], cur='orders', selStore=null;
 const DRV_URL=location.href.replace(/[^\/]*$/,'driver.html?t=');
 function waNum(p){let d=String(p||'').replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
 function copyTxt(t,okMsg){
@@ -138,7 +139,7 @@ document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')
 async function showPanel(){
  document.getElementById('gate').style.display='none';
  document.getElementById('panel').style.display='block';
- await Promise.all([loadOrders(),loadStores(),loadCodes(),loadDrivers()]);
+ await Promise.all([loadOrders(),loadStores(),loadCodes(),loadDrivers(),loadSupport()]);
  render();
 }
 function tab(t){
@@ -146,6 +147,7 @@ function tab(t){
  document.getElementById('tOrders').className=t==='orders'?'on':'';
  document.getElementById('tStores').className=t==='stores'?'on':'';
  document.getElementById('tCodes').className=t==='codes'?'on':'';
+ document.getElementById('tSupport').className=t==='support'?'on':'';
  document.getElementById('tDrivers').className=t==='drivers'?'on':'';
  render();
 }
@@ -181,7 +183,12 @@ async function loadDrivers(){
  }catch(e){}
  if(cur==='drivers')render();
 }
-function render(){cur==='orders'?renderOrders():cur==='stores'?renderStores():cur==='drivers'?renderDrivers():renderCodes()}
+function render(){cur==='orders'?renderOrders():cur==='stores'?renderStores():cur==='drivers'?renderDrivers():cur==='support'?renderSupport():renderCodes()}
+async function loadSupport(){
+ const r=await api('/rest/v1/support_messages?select=*&order=created_at.desc',{headers:hdrs()});
+ if(r.ok)MSGS=await r.json();
+ if(cur==='support')render();
+}
 function renderOrders(){
  app.innerHTML=`<div class="panel">
  <div class="refreshbar"><h2>📦 الطلبات (${ORDERS.length})</h2>
@@ -326,6 +333,32 @@ async function delCode(code){
   if(!r.ok)throw 0;
   await loadCodes();
  }catch(e){alert('حصلت مشكلة في حذف الكود')}
+}
+function renderSupport(){
+ const unread=MSGS.filter(m=>!m.is_read).length;
+ app.innerHTML=`<div class="panel">
+ <div class="refreshbar"><h2>💬 رسائل الدعم (${MSGS.length})${unread?` — <span style="color:#dc2626">${unread} جديدة</span>`:''}</h2>
+ <button class="btn sm gray" onclick="loadSupport()">🔄 تحديث</button></div>
+ ${MSGS.length?MSGS.map(m=>`
+ <div class="order" style="${m.is_read?'opacity:.7':'border-right:4px solid #d4af37'}">
+  <div class="top"><span class="id">${esc(m.name||'زائر')}</span><span class="meta">🕐 ${new Date(m.created_at).toLocaleString('ar-EG')}</span></div>
+  <div class="meta">📞 <span dir="ltr">${esc(m.phone)}</span></div>
+  <div class="items">${esc(m.message)}</div>
+  <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+   <a class="btn sm" style="text-decoration:none" target="_blank" href="https://wa.me/${waNum(m.phone)}?text=${encodeURIComponent('أهلاً '+(m.name||'')+' 👋 معاك دعم أليكس شوب — بخصوص رسالتك:')}">💬 رد واتساب</a>
+   <a class="btn sm gray" style="text-decoration:none" href="tel:${esc(m.phone)}">📞 اتصال</a>
+   ${m.is_read?'':'<button class="btn sm gray" onclick="markRead('+m.id+')">✓ اتقرت</button>'}
+  </div>
+ </div>`).join(''):'<div class="empty">مفيش رسائل دعم لسه. أول ما عميل يبعت من صفحة الدعم هيظهر هنا.</div>'}
+ </div>`;
+}
+async function markRead(id){
+ const m=MSGS.find(x=>x.id===id);if(m)m.is_read=true;
+ try{
+  const r=await api('/rest/v1/support_messages?id=eq.'+id,{method:'PATCH',headers:hdrs(true),body:JSON.stringify({is_read:true})});
+  if(!r.ok)throw 0;
+ }catch(e){if(m)m.is_read=false;alert('حصلت مشكلة — جرّب تاني')}
+ render();
 }
 function renderStores(){
  app.innerHTML=`
