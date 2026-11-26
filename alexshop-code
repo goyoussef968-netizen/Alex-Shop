@@ -1,0 +1,369 @@
+===== ./src/App.tsx =====
+import React, { useMemo, useState } from 'react';
+import {
+    Callout, Caption, Closing, Facts, FileButton, FileCard, Group, Header,
+    NumberedList, ChoiceRow, TextField, Photos, useLocalState,
+} from '@instinct/files';
+import preview from './photos/preview.png';
+
+type Product = { id: string; name: string; unit: string; price: number; emoji: string; tint: string };
+type Store = { id: string; name: string; category: string; emoji: string; tint: string; eta: string; minOrder: number; products: Product[] };
+type Cart = Record<string, number>;
+type View =
+    | { kind: 'home' }
+    | { kind: 'store'; storeId: string }
+    | { kind: 'cart' }
+    | { kind: 'checkout' }
+    | { kind: 'done'; order: Order };
+type Order = { number: string; total: number; items: number; address: string; payment: string };
+
+const DELIVERY_FEE = 20;
+
+const stores: Store[] = [
+    {
+        id: 'star', name: 'سوبر ماركت ستار العجمي', category: 'سوبر ماركت', emoji: '🛒', tint: '#e8f0ee',
+        eta: 'من ٣٠ لـ ٤٥ دقيقة', minOrder: 50,
+        products: [
+            { id: 'rice', name: 'أرز مصري', unit: 'كيس ١ كجم', price: 38, emoji: '🍚', tint: '#f6efe4' },
+            { id: 'oil', name: 'زيت عباد الشمس', unit: 'زجاجة ٧٠٠ مل', price: 72, emoji: '🫗', tint: '#fdf3e0' },
+            { id: 'pasta', name: 'مكرونة', unit: 'كيس ٤٠٠ جم', price: 12, emoji: '🍝', tint: '#fbf0e6' },
+            { id: 'sugar', name: 'سكر', unit: 'كيس ١ كجم', price: 32, emoji: '🧂', tint: '#f2f2f4' },
+            { id: 'tea', name: 'شاي', unit: 'علبة ٤٠ كيس', price: 30, emoji: '🍵', tint: '#ecf3ea' },
+            { id: 'milk', name: 'لبن كامل الدسم', unit: '١ لتر', price: 32, emoji: '🥛', tint: '#eef4f8' },
+            { id: 'eggs', name: 'بيض بلدي', unit: 'طبق ٣٠ بيضة', price: 145, emoji: '🥚', tint: '#f8f1e6' },
+            { id: 'tissues', name: 'مناديل', unit: 'علبة ٣٠٠ منديل', price: 25, emoji: '🧻', tint: '#f0eef6' },
+        ],
+    },
+    {
+        id: 'salama', name: 'خضار وفاكهة الحاج سلامة', category: 'خضار وفاكهة', emoji: '🥬', tint: '#e9f3e4',
+        eta: 'من ٢٥ لـ ٤٠ دقيقة', minOrder: 30,
+        products: [
+            { id: 'tomato', name: 'طماطم', unit: '١ كجم', price: 15, emoji: '🍅', tint: '#fbe9e7' },
+            { id: 'potato', name: 'بطاطس', unit: '١ كجم', price: 18, emoji: '🥔', tint: '#f6efe2' },
+            { id: 'onion', name: 'بصل', unit: '١ كجم', price: 20, emoji: '🧅', tint: '#f5ece4' },
+            { id: 'banana', name: 'موز', unit: '١ كجم', price: 30, emoji: '🍌', tint: '#fdf6dd' },
+            { id: 'orange', name: 'برتقال', unit: '١ كجم', price: 15, emoji: '🍊', tint: '#fdeee2' },
+            { id: 'cucumber', name: 'خيار', unit: '١ كجم', price: 15, emoji: '🥒', tint: '#e9f4e6' },
+            { id: 'apple', name: 'تفاح', unit: '١ كجم', price: 45, emoji: '🍎', tint: '#fbeaea' },
+        ],
+    },
+    {
+        id: 'balady', name: 'مخبز البلدي', category: 'مخبوزات', emoji: '🍞', tint: '#f7efe3',
+        eta: 'من ٢٠ لـ ٣٥ دقيقة', minOrder: 20,
+        products: [
+            { id: 'balady', name: 'عيش بلدي', unit: '٥ أرغفة', price: 10, emoji: '🫓', tint: '#f6ecdc' },
+            { id: 'fino', name: 'عيش فينو', unit: '٦ قطع', price: 12, emoji: '🥖', tint: '#f7efe0' },
+            { id: 'croissant', name: 'كرواسون سادة', unit: 'القطعة', price: 12, emoji: '🥐', tint: '#f8efdf' },
+            { id: 'qaraqish', name: 'قراقيش', unit: 'علبة', price: 25, emoji: '🍪', tint: '#f4ecdd' },
+            { id: 'petitfour', name: 'بيتي فور', unit: 'نص كيلو', price: 90, emoji: '🧁', tint: '#f6e9ec' },
+            { id: 'cinnamon', name: 'رول القرفة', unit: 'القطعة', price: 20, emoji: '🍥', tint: '#f5ebdf' },
+        ],
+    },
+    {
+        id: 'ikhlas', name: 'محمصة وعطارة الإخلاص', category: 'مكسرات وعطارة', emoji: '🥜', tint: '#f3ede4',
+        eta: 'من ٣٠ لـ ٥٠ دقيقة', minOrder: 40,
+        products: [
+            { id: 'peanut', name: 'فول سوداني محمص', unit: '٢٥٠ جم', price: 30, emoji: '🥜', tint: '#f6eee1' },
+            { id: 'seeds', name: 'لب سوري', unit: '٢٥٠ جم', price: 40, emoji: '🌻', tint: '#f8f1de' },
+            { id: 'walnut', name: 'عين جمل', unit: '٢٥٠ جم', price: 90, emoji: '🌰', tint: '#f2ebe2' },
+            { id: 'spices', name: 'بهارات مشكلة', unit: '١٠٠ جم', price: 20, emoji: '🧂', tint: '#f3efe6' },
+            { id: 'lentil', name: 'عدس أصفر', unit: '٥٠٠ جم', price: 28, emoji: '🟡', tint: '#fbf2dd' },
+            { id: 'beans', name: 'فاصوليا بيضا', unit: '٥٠٠ جم', price: 35, emoji: '🫘', tint: '#f5ecec' },
+        ],
+    },
+];
+
+const productIndex = new Map<string, { store: Store; product: Product }>();
+for (const store of stores) for (const product of store.products) productIndex.set(`${store.id}:${product.id}`, { store, product });
+
+const egp = (n: number) => `${n} ج.م`;
+
+function QtyStepper({ qty, onChange }: { qty: number; onChange: (qty: number) => void }) {
+    return <div className="alex-stepper" dir="ltr">
+        <button type="button" aria-label="قلل الكمية" onClick={() => onChange(qty - 1)}>{qty <= 1 ? '🗑' : '−'}</button>
+        <span aria-live="polite">{qty}</span>
+        <button type="button" aria-label="زود الكمية" onClick={() => onChange(qty + 1)}>+</button>
+    </div>;
+}
+
+export function App() {
+    const [view, setView] = useState<View>({ kind: 'home' });
+    const [cart, setCart, saved] = useLocalState<Cart>('alexshop-cart.v1', {});
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
+    const [payment, setPayment] = useState('cash');
+    const [triedSubmit, setTriedSubmit] = useState(false);
+
+    const entries = useMemo(() => Object.entries(cart)
+        .map(([key, qty]) => ({ key, qty, item: productIndex.get(key)! }))
+        .filter((entry) => entry.item && entry.qty > 0), [cart]);
+    const itemCount = entries.reduce((sum, entry) => sum + entry.qty, 0);
+    const subtotal = entries.reduce((sum, entry) => sum + entry.qty * entry.item.product.price, 0);
+    const total = subtotal + (entries.length ? DELIVERY_FEE : 0);
+
+    const setQty = (key: string, qty: number) => {
+        if (!saved.ready) return;
+        const next = { ...cart };
+        if (qty <= 0) delete next[key]; else next[key] = qty;
+        setCart(next);
+    };
+
+    const confirmOrder = () => {
+        setTriedSubmit(true);
+        if (!name.trim() || !phone.trim() || !address.trim() || entries.length === 0) return;
+        const order: Order = {
+            number: `AX-${String(Math.floor(1000 + Math.random() * 9000))}`,
+            total, items: itemCount, address: address.trim(),
+            payment: payment === 'cash' ? 'كاش عند الاستلام' : 'فودافون كاش',
+        };
+        setCart({});
+        setTriedSubmit(false);
+        setView({ kind: 'done', order });
+    };
+
+    const cartBar = entries.length > 0 && view.kind !== 'cart' && view.kind !== 'checkout' && view.kind !== 'done'
+        ? <div className="alex-cartbar">
+            <div>
+                <strong>السلة: <bdi>{`${itemCount} ${itemCount === 1 ? 'منتج' : 'منتجات'}`}</bdi></strong>
+                <span className="alex-cartbar-total"><bdi>{egp(subtotal)}</bdi></span>
+            </div>
+            <FileButton variant="primary" compact onClick={() => setView({ kind: 'cart' })}>عرض السلة</FileButton>
+        </div>
+        : null;
+
+    return <FileCard lang="ar" dir="rtl">
+        <Header
+            title="Alex shop"
+            fact="العجمي، إسكندرية"
+            intro="نسخة تجريبية من تطبيق العميل: تتصفح المحلات، تضيف للسلة، وتأكد الطلب. جرّبها براحتك."
+        />
+
+        {view.kind === 'home' && <>
+            <Callout title="بيانات تجريبية" tone="note">
+                المحلات والمنتجات والأسعار هنا للتجربة بس، ومش محلات حقيقية ولا طلب حقيقي بيتبعت.
+            </Callout>
+            <Photos label="Alex shop" items={[{ src: preview, alt: 'رسم توضيحي لشنطة مشتريات فيها عيش وخضار وفاكهة' }]} />
+            <Caption>رسم توضيحي، مش صورة منتجات حقيقية.</Caption>
+            <Group label="المحلات" heading>
+                <div className="alex-stores">
+                    {stores.map((store) => <button key={store.id} type="button" className="alex-store" onClick={() => setView({ kind: 'store', storeId: store.id })}>
+                        <span className="alex-well" style={{ background: store.tint }} aria-hidden>{store.emoji}</span>
+                        <span className="alex-store-body">
+                            <strong className="file-hover-underline">{store.name}</strong>
+                            <span>{store.category}</span>
+                            <span>التوصيل {store.eta} • أقل طلب <bdi>{egp(store.minOrder)}</bdi></span>
+                        </span>
+                        <span className="alex-chevron" aria-hidden>‹</span>
+                    </button>)}
+                </div>
+            </Group>
+            <Group label="إزاي بيشتغل" heading>
+                <NumberedList items={[
+                    'تختار المحل اللي هتطلب منه.',
+                    'تضيف المنتجات للسلة وتظبط الكميات.',
+                    'تكتب اسمك وعنوانك وتأكد الطلب.',
+                    'السائق يستلم الطلب ويوصله لحد باب البيت.',
+                ]} />
+            </Group>
+        </>}
+
+        {view.kind === 'store' && (() => {
+            const store = stores.find((s) => s.id === (view as { storeId: string }).storeId)!;
+            return <>
+                <FileButton variant="ghost" compact onClick={() => setView({ kind: 'home' })}>‹ رجوع للمحلات</FileButton>
+                <Group label={store.category} heading={store.name}>
+                    <Caption>التوصيل {store.eta} • أقل طلب <bdi>{egp(store.minOrder)}</bdi> • الأسعار تجريبية</Caption>
+                    <div className="alex-grid">
+                        {store.products.map((product) => {
+                            const key = `${store.id}:${product.id}`;
+                            const qty = cart[key] ?? 0;
+                            return <div key={product.id} className="alex-product">
+                                <span className="alex-well alex-well-lg" style={{ background: product.tint }} aria-hidden>{product.emoji}</span>
+                                <strong>{product.name}</strong>
+                                <span className="alex-unit">{product.unit}</span>
+                                <div className="alex-buy">
+                                    <span className="alex-price"><bdi>{egp(product.price)}</bdi></span>
+                                    {qty === 0
+                                        ? <FileButton variant="secondary" compact pill onClick={() => setQty(key, 1)}>أضف</FileButton>
+                                        : <QtyStepper qty={qty} onChange={(q) => setQty(key, q)} />}
+                                </div>
+                            </div>;
+                        })}
+                    </div>
+                </Group>
+            </>;
+        })()}
+
+        {view.kind === 'cart' && <>
+            <FileButton variant="ghost" compact onClick={() => setView({ kind: 'home' })}>‹ أكمل التسوق</FileButton>
+            <Group label="سلة المشتريات" heading>
+                {entries.length === 0
+                    ? <Callout title="السلة فاضية" tone="note">ضيف منتجات من أي محل وارجع هنا.</Callout>
+                    : <>
+                        <div className="alex-cart">
+                            {entries.map(({ key, qty, item }) => <div key={key} className="alex-cartrow">
+                                <span className="alex-well" style={{ background: item.product.tint }} aria-hidden>{item.product.emoji}</span>
+                                <span className="alex-cartrow-body">
+                                    <strong>{item.product.name}</strong>
+                                    <span>{item.store.name} • {item.product.unit}</span>
+                                </span>
+                                <QtyStepper qty={qty} onChange={(q) => setQty(key, q)} />
+                                <span className="alex-price"><bdi>{egp(qty * item.product.price)}</bdi></span>
+                            </div>)}
+                        </div>
+                        <Facts items={[
+                            { label: 'المنتجات', value: egp(subtotal) },
+                            { label: 'التوصيل', value: egp(DELIVERY_FEE) },
+                            { label: 'الإجمالي', value: egp(total) },
+                        ]} />
+                        <div className="alex-actions">
+                            <FileButton variant="primary" onClick={() => setView({ kind: 'checkout' })}>متابعة للدفع</FileButton>
+                            <FileButton variant="ghost" onClick={() => setCart({})}>فضّي السلة</FileButton>
+                        </div>
+                    </>}
+            </Group>
+        </>}
+
+        {view.kind === 'checkout' && <>
+            <FileButton variant="ghost" compact onClick={() => setView({ kind: 'cart' })}>‹ رجوع للسلة</FileButton>
+            <Group label="بيانات التوصيل" heading>
+                <TextField label="الاسم" value={name} onChange={setName} />
+                <TextField label="رقم الموبايل" value={phone} onChange={setPhone} />
+                <TextField label="العنوان بالتفصيل (العجمي)" value={address} onChange={setAddress} />
+                {triedSubmit && (!name.trim() || !phone.trim() || !address.trim()) &&
+                    <p className="alex-error" role="alert">املأ الاسم ورقم الموبايل والعنوان قبل تأكيد الطلب.</p>}
+            </Group>
+            <Group label="طريقة الدفع" heading>
+                <ChoiceRow
+                    label="الدفع"
+                    options={[
+                        { value: 'cash', label: 'كاش عند الاستلام' },
+                        { value: 'wallet', label: 'فودافون كاش' },
+                    ]}
+                    value={payment}
+                    onChange={setPayment}
+                />
+            </Group>
+            <Group label="ملخص الطلب" heading>
+                <Facts items={[
+                    { label: 'عدد المنتجات', value: String(itemCount) },
+                    { label: 'المنتجات', value: egp(subtotal) },
+                    { label: 'التوصيل', value: egp(DELIVERY_FEE) },
+                    { label: 'الإجمالي', value: egp(total) },
+                ]} />
+                <div className="alex-actions">
+                    <FileButton variant="primary" onClick={confirmOrder}>تأكيد الطلب</FileButton>
+                </div>
+                <Caption>{saved.message}</Caption>
+            </Group>
+        </>}
+
+        {view.kind === 'done' && (() => {
+            const order = (view as { order: Order }).order;
+            return <>
+                <Group label="تم استلام الطلب" heading>
+                    <div className="alex-done">
+                        <span className="alex-done-icon" aria-hidden>✅</span>
+                        <p><strong>طلبك اتسجل برقم <bdi>{order.number}</bdi></strong></p>
+                        <p>هيوصلك على عنوان: {order.address} خلال ٤٥ لـ ٦٠ دقيقة تقريبًا.</p>
+                    </div>
+                    <Facts items={[
+                        { label: 'عدد المنتجات', value: String(order.items) },
+                        { label: 'الإجمالي شامل التوصيل', value: egp(order.total) },
+                        { label: 'الدفع', value: order.payment },
+                    ]} />
+                    <Callout title="ده طلب تجريبي" tone="warning">مفيش طلب حقيقي اتبعت ولا فلوس اتدفعت. في التطبيق الحقيقي هنا بيتم إشعار المحل وتعيين سائق.</Callout>
+                    <div className="alex-actions">
+                        <FileButton variant="primary" onClick={() => setView({ kind: 'home' })}>اطلب من جديد</FileButton>
+                    </div>
+                </Group>
+            </>;
+        })()}
+
+        {cartBar}
+
+        <Closing>نسخة تجريبية للعرض بس، ببيانات وأسعار غير حقيقية. آخر تحديث ٢٦ نوفمبر ٢٠٢٦.</Closing>
+    </FileCard>;
+}
+
+===== ./src/main.tsx =====
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { FileRouter } from '@instinct/files';
+import { App } from './App';
+import './style.css';
+
+createRoot(document.getElementById('root')!).render(<FileRouter><App /></FileRouter>);
+
+===== ./src/style.css =====
+html, body, #root { margin: 0; min-height: 100%; }
+body { background: var(--ds-page); }
+.file-nav { display: flex; flex-wrap: wrap; gap: 20px; border-bottom: 1px solid var(--ds-hairline); }
+.file-nav a { padding: 10px 0; color: var(--ds-ink-2); text-decoration: none; }
+.file-nav a[aria-current="page"] { color: var(--ds-ink); box-shadow: inset 0 -1px 0 var(--ds-ink); }
+@media (max-width: 600px) { .file-nav a { display: inline-flex; align-items: center; min-height: 44px; } }
+
+/* Alex shop prototype */
+
+.alex-stores { display: grid; gap: 12px; }
+.alex-store {
+    display: flex; align-items: center; gap: 14px; text-align: start;
+    padding: 12px; border: 1px solid var(--ds-hairline); border-radius: 16px;
+    background: var(--ds-page); color: var(--ds-ink); cursor: pointer; font: inherit;
+    min-height: 44px;
+}
+.alex-store:hover { border-color: var(--ds-teal); }
+.alex-store-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.alex-store-body strong { font-weight: 600; }
+.alex-store-body span { color: var(--ds-ink-2); font-size: 12px; line-height: 18px; }
+.alex-chevron { color: var(--ds-ink-2); font-size: 22px; line-height: 1; }
+.alex-well {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px; border-radius: 12px; font-size: 26px; flex: none;
+}
+.alex-well-lg { width: 100%; height: 84px; border-radius: 12px; font-size: 40px; }
+
+.alex-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
+@media (min-width: 768px) { .alex-grid { grid-template-columns: repeat(3, 1fr); } }
+.alex-product {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 12px; border: 1px solid var(--ds-hairline); border-radius: 16px;
+}
+.alex-product strong { font-weight: 600; }
+.alex-unit { color: var(--ds-ink-2); font-size: 12px; }
+.alex-buy { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.alex-price { font-weight: 600; color: var(--ds-teal); white-space: nowrap; }
+
+.alex-stepper {
+    display: inline-flex; align-items: center; gap: 2px;
+    border: 1px solid var(--ds-hairline); border-radius: 999px; padding: 2px;
+}
+.alex-stepper button {
+    width: 32px; height: 32px; border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--ds-raised); color: var(--ds-ink); font-size: 16px; line-height: 1;
+}
+.alex-stepper span { min-width: 24px; text-align: center; font-weight: 600; }
+
+.alex-cart { display: flex; flex-direction: column; }
+.alex-cartrow {
+    display: flex; align-items: center; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--ds-hairline); flex-wrap: wrap;
+}
+.alex-cartrow-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
+.alex-cartrow-body strong { font-weight: 600; }
+.alex-cartrow-body span { color: var(--ds-ink-2); font-size: 12px; }
+
+.alex-cartbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-top: 24px; padding: 12px 16px; border-radius: 16px;
+    background: var(--ds-raised);
+}
+.alex-cartbar-total { color: var(--ds-ink-2); margin-inline-start: 10px; }
+
+.alex-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.alex-error { color: var(--ds-red); margin: 8px 0 0; }
+
+.alex-done { text-align: center; padding: 12px 0 4px; }
+.alex-done-icon { font-size: 44px; display: block; margin-bottom: 8px; }
+
