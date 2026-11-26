@@ -193,6 +193,7 @@ function renderOrders(){
    ${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></div>
   <div class="meta">👤 ${esc(o.customer_name)} · 📞 ${esc(o.phone)} · 💳 ${esc(o.payment)}</div>
   <div class="meta">📍 ${esc(o.address)}</div>
+  ${o.location_lat!=null&&o.location_lng!=null?`<div class="meta">🗺 <a href="https://maps.google.com/?q=${o.location_lat},${o.location_lng}" target="_blank" style="color:#2563eb;font-weight:700">افتح موقع العميل على الخريطة</a></div>`:''}
   <div class="meta">🕐 ${new Date(o.created_at).toLocaleString('ar-EG')}</div>
   <div class="items">${(o.items||[]).map(x=>`${esc(x.name)} × ${x.qty} (${x.price*x.qty} ج) — ${esc(x.store)}`).join('<br>')}</div>
   ${o.discount>0?`<div class="meta" style="color:#15803d;font-weight:700">🎟 خصم: −${o.discount} ج${o.discount_code?' ('+esc(o.discount_code)+')':''}</div>`:''}
