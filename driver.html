@@ -98,6 +98,7 @@ function render(orders){
    <span class="badge ${out?'b2':'b1'}">${out?'🛵 خرج للتوصيل':'📦 جاهز للتوصيل'}</span></div>
   <div class="meta">👤 <b>${esc(o.customer_name)}</b></div>
   <div class="meta">📍 ${esc(o.address)}</div>
+  ${o.location_lat!=null&&o.location_lng!=null?`<a class="cbtn" style="display:block;margin-top:8px;background:#eff6ff;border-color:#93c5fd;color:#1d4ed8" target="_blank" href="https://maps.google.com/?q=${o.location_lat},${o.location_lng}">🗺 افتح موقع العميل على الخريطة</a>`:''}
   <div class="meta">💳 ${esc(o.payment)} — التحصيل: <b>${o.total} ج</b></div>
   <div class="cbtns">
    <a class="cbtn" href="tel:${esc(o.phone)}">📞 اتصل بالعميل</a>
