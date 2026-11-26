@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تابع طلبك | أليكس شوب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',system-ui,sans-serif}
+body{background:#f6f7f6;color:#1a1a1a;padding-bottom:80px}
+header{background:#16a34a;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .wrap{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.4rem;font-weight:800;cursor:pointer}
+.logo small{font-size:.7rem;font-weight:400;display:block;opacity:.9}
+.hbtn{background:#fff;color:#16a34a;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.95rem;cursor:pointer}
+main{max-width:720px;margin:0 auto;padding:16px}
+.panel{background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px}
+label{display:block;font-weight:700;font-size:.88rem;margin:12px 0 4px}
+input{width:100%;padding:11px 12px;border:1.5px solid #d1d5db;border-radius:10px;font-size:1rem;background:#fff}
+input:focus{outline:none;border-color:#16a34a}
+.cta{display:block;width:100%;background:#16a34a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1.05rem;font-weight:800;cursor:pointer;margin-top:14px}
+.cta:disabled{background:#9ca3af;cursor:not-allowed}
+.err{color:#dc2626;font-size:.85rem;margin-top:10px;display:none;text-align:center}
+.err.show{display:block}
+.steps{display:flex;justify-content:space-between;margin:18px 0 6px;position:relative}
+.steps::before{content:'';position:absolute;top:17px;right:12%;left:12%;height:4px;background:#e5e7eb;border-radius:2px}
+.step{flex:1;text-align:center;position:relative;z-index:1}
+.step .dot{width:34px;height:34px;border-radius:50%;background:#e5e7eb;color:#9ca3af;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:1rem;font-weight:800}
+.step.done .dot{background:#16a34a;color:#fff}
+.step p{font-size:.72rem;font-weight:700;color:#9ca3af}
+.step.done p{color:#15803d}
+.cancelled{background:#fef2f2;border:1.5px solid #fca5a5;color:#b91c1c;border-radius:12px;padding:14px;text-align:center;font-weight:800;margin:14px 0}
+.onum{background:#e8f7ee;color:#15803d;font-weight:800;border-radius:10px;padding:8px 18px;display:inline-block;font-size:1.1rem}
+.items{font-size:.85rem;margin-top:10px;background:#f9fafb;border-radius:8px;padding:8px 10px}
+.tot{font-weight:800;margin-top:8px}
+.meta{font-size:.8rem;color:#666;margin-top:4px}
+footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color:#999;font-size:.75rem}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="logo" onclick="location.href='index.html'">🛒 أليكس شوب<small>توصيل من محلات العجمي لباب بيتك</small></div>
+<button class="hbtn" onclick="location.href='index.html'">المحلات</button>
+</div></header>
+<main>
+<div class="panel">
+ <h2 style="text-align:center">📦 تابع حالة طلبك</h2>
+ <label>رقم الطلب</label>
+ <input id="fOrder" inputmode="numeric" placeholder="مثال: 12" dir="ltr" style="text-align:center">
+ <label>رقم الموبايل اللي طلبت بيه</label>
+ <input id="fPhone" inputmode="tel" placeholder="01xxxxxxxxx" dir="ltr" style="text-align:center">
+ <button class="cta" id="trackBtn" onclick="track()">شوف الحالة</button>
+ <div class="err" id="errMsg">رقم الطلب أو الموبايل غلط. اتأكد منهم وجرب تاني.</div>
+</div>
+<div id="result"></div>
+</main>
+<footer>Alex Shop — أليكس شوب، توصيل من محلات العجمي لباب بيتك.</footer>
+<script>
+// ================== إعدادات قاعدة البيانات ==================
+const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
+const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
+// ============================================================
+const STEPS=['جديد','مقبول','خرج للتوصيل','اتسلّم'];
+const ICONS=['📝','✅','🛵','🎉'];
+function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function orderNum(v){v=String(v).trim().toUpperCase().replace(/^AX[-\s]?/,'').replace(/\D/g,'');return v?parseInt(v,10):null}
+async function track(){
+ const id=orderNum(document.getElementById('fOrder').value);
+ const ph=document.getElementById('fPhone').value.trim();
+ const err=document.getElementById('errMsg');err.classList.remove('show');
+ document.getElementById('result').innerHTML='';
+ if(!id||ph.replace(/\D/g,'').length<10){err.classList.add('show');return}
+ const btn=document.getElementById('trackBtn');btn.disabled=true;btn.textContent='بنبحث...';
+ try{
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_order_status',{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({p_id:id,p_phone:ph})});
+  if(!r.ok)throw 0;
+  const o=await r.json();
+  if(!o){err.classList.add('show');return}
+  try{localStorage.setItem('alexshop_last_order',String(o.id));localStorage.setItem('alexshop_phone',ph)}catch(e){}
+  renderOrder(o);
+ }catch(e){
+  err.textContent='حصلت مشكلة في الاتصال. اتأكد من الإنترنت وجرب تاني.';
+  err.classList.add('show');
+ }
+ btn.disabled=false;btn.textContent='شوف الحالة';
+}
+function renderOrder(o){
+ const isCancelled=(o.status==='ملغي');
+ const idx=STEPS.indexOf(o.status);
+ let html='<div class="panel" style="text-align:center">';
+ html+='<p style="color:#666">رقم الطلب:</p><div class="onum">AX-'+o.id+'</div>';
+ html+='<div class="meta">🕐 '+new Date(o.created_at).toLocaleString('ar-EG')+'</div>';
+ if(isCancelled){
+  html+='<div class="cancelled">❌ الطلب ده اتلغى. لو عندك استفسار كلمنا.</div>';
+ }else{
+  html+='<div class="steps">'+STEPS.map((s,i)=>
+   '<div class="step '+(i<=idx?'done':'')+'"><div class="dot">'+(i<idx?'✓':ICONS[i])+'</div><p>'+s+'</p></div>'
+  ).join('')+'</div>';
+  if(idx===0)html+='<div class="meta" style="margin-top:8px">طلبك اتسجّل وبنراجعه 👍</div>';
+  else if(idx===1)html+='<div class="meta" style="margin-top:8px">طلبك اتقبل وبنجهزه 👨‍🍳</div>';
+  else if(idx===2)html+='<div class="meta" style="margin-top:8px">الطلب خرج للتوصيل، في الطريق ليك 🛵</div>';
+  else if(idx===3)html+='<div class="meta" style="margin-top:8px">اتسلّم! بالهنا والشفا 🎉</div>';
+ }
+ html+='<div style="text-align:right;margin-top:14px"><b>الأصناف:</b>';
+ html+='<div class="items">'+(o.items||[]).map(x=>esc(x.name)+' × '+x.qty+' ('+(x.price*x.qty)+' ج) — '+esc(x.store||'')).join('<br>')+'</div>';
+ html+='<div class="tot">الإجمالي: '+o.total+' ج (شامل توصيل '+(o.fee||0)+' ج)</div></div>';
+ html+='<button class="cta" onclick="track()">🔄 تحديث الحالة</button>';
+ html+='</div>';
+ document.getElementById('result').innerHTML=html;
+}
+// لو جاي من صفحة التأكيد، عبّي رقم الطلب والموبايل لوحدهم
+try{
+ const q=new URLSearchParams(location.search);
+ const o=q.get('o');
+ if(o)document.getElementById('fOrder').value=o;
+ const savedPhone=localStorage.getItem('alexshop_phone');
+ if(savedPhone&&!document.getElementById('fPhone').value)document.getElementById('fPhone').value=savedPhone;
+ if(o&&document.getElementById('fPhone').value)track();
+}catch(e){}
+</script>
+</body>
+</html>
