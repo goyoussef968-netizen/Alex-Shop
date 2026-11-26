@@ -69,7 +69,8 @@ body.light .stepper .q{color:var(--gold)}
 .locmsg.ok{color:var(--green)}
 .locmsg.warn{color:var(--gold2)}
 label{display:block;font-weight:700;font-size:.86rem;margin:12px 0 4px}
-input,select{width:100%;padding:11px 12px;border:1.5px solid var(--border2);border-radius:12px;font-size:1rem;background:var(--inputbg);color:var(--text)}
+input,select,textarea{width:100%;padding:11px 12px;border:1.5px solid var(--border2);border-radius:12px;font-size:1rem;background:var(--inputbg);color:var(--text)}
+textarea{resize:vertical;font-family:inherit}
 input:focus{outline:none;border-color:var(--gold)}
 input::placeholder{color:var(--muted);opacity:.7}
 .err{color:var(--red);font-size:.8rem;margin-top:4px;display:none}
@@ -333,11 +334,20 @@ function render(){
  else if(state.view==='support'){
   const waNum=SUPPORT_WA;
   const telLocal=waNum.startsWith('20')?'0'+waNum.slice(2):waNum;
+  const savedName=(()=>{try{return localStorage.getItem('alexshop_name')||''}catch(e){return ''}})();
+  const savedPhone=(()=>{try{return localStorage.getItem('alexshop_phone')||''}catch(e){return ''}})();
   app.innerHTML=`
   <div class="hero">
    <div class="kicker">الدعم الفني</div>
    <h1>محتاج مساعدة؟<br>إحنا معاك</h1>
-   <p>كلمنا على واتساب أو اتصل بينا — فريق أليكس شوب بيرد بسرعة.</p>
+   <p>راسلنا من هنا، أو كلمنا واتساب أو اتصل بينا — فريق أليكس شوب بيرد بسرعة.</p>
+  </div>
+  <div class="panel" style="margin-bottom:12px"><h2 style="margin-bottom:6px">✉️ راسلنا من هنا</h2>
+   <label>الاسم (اختياري)</label><input id="sName" placeholder="اسمك" value="${esc(savedName)}">
+   <label>رقم الموبايل</label><input id="sPhone" inputmode="tel" placeholder="01xxxxxxxxx" value="${esc(savedPhone)}">
+   <label>رسالتك</label><textarea id="sMsg" rows="3" placeholder="اكتب استفسارك أو مشكلتك…"></textarea>
+   <div class="err" id="eSupp"></div>
+   <button class="cta" id="suppBtn" onclick="sendSupport()">ابعت الرسالة</button>
   </div>
   ${waNum?`<a class="bigbtn" target="_blank" href="https://wa.me/${waNum}?text=${encodeURIComponent('السلام عليكم 👋 عندي استفسار عن أليكس شوب')}"><span class="ic">💬</span><span><div class="t">واتساب الدعم</div><div class="d">أسرع رد — ابعت رسالتك وهنرد عليك</div></span></a>
   <a class="bigbtn" href="tel:${telLocal}"><span class="ic">📞</span><span><div class="t">اتصال مباشر</div><div class="d" dir="ltr">${telLocal}</div></span></a>`:''}
@@ -395,6 +405,32 @@ async function applyDiscount(){
  }
 }
 function rmDisc(){setDisc(null);render()}
+async function sendSupport(){
+ const n=document.getElementById('sName').value.trim(),
+       ph=document.getElementById('sPhone').value.trim(),
+       m=document.getElementById('sMsg').value.trim(),
+       e=document.getElementById('eSupp'),
+       btn=document.getElementById('suppBtn');
+ e.classList.remove('show');
+ if(!/^01[0-9]{9}$/.test(ph.replace(/\s/g,''))){e.textContent='اكتب رقم موبايل صحيح (11 رقم يبدأ بـ 01)';e.classList.add('show');return}
+ if(m.length<2){e.textContent='اكتب رسالتك الأول';e.classList.add('show');return}
+ btn.disabled=true;btn.textContent='جاري الإرسال...';
+ try{
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/submit_support_message',{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({p_name:n||null,p_phone:ph,p_message:m})});
+  const d=await r.json().catch(()=>null);
+  if(!r.ok||!d||!d.ok)throw ((d&&d.msg)||0);
+  document.getElementById('sMsg').value='';
+  try{localStorage.setItem('alexshop_phone',ph);if(n)localStorage.setItem('alexshop_name',n)}catch(_){}
+  btn.textContent='✓ وصلت رسالتك — هنرد عليك قريب';
+  setTimeout(()=>{btn.disabled=false;btn.textContent='ابعت الرسالة'},4000);
+ }catch(x){
+  btn.disabled=false;btn.textContent='ابعت الرسالة';
+  e.textContent=(typeof x==='string'&&x)?x:'حصلت مشكلة في الإرسال — جرّب تاني أو كلمنا واتساب';
+  e.classList.add('show');
+ }
+}
 let geoBusy=false;
 function useMyLocation(){
  if(geoBusy)return;
