@@ -1,126 +1,132 @@
--- ============================================
--- أليكس شوب — خطوة قاعدة البيانات لصفحة المندوب
--- (جدول المناديب + دوال آمنة للمندوب)
--- الصق الكود ده كله في Supabase > SQL Editor ودوس Run
--- ============================================
-
--- 1) جدول المناديب: كل مندوب ليه رابط سري خاص بيه (token)
---    التوكن بيتولّد عشوائي جوه قاعدة البيانات (48 حرف) — مستحيل يتخمّن
-create table if not exists public.drivers (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  phone text,
-  token text not null unique default encode(gen_random_bytes(24), 'hex'),
-  active boolean not null default true,
-  created_at timestamptz not null default now()
-);
-alter table public.drivers enable row level security;
-
-drop policy if exists "admin manages drivers" on public.drivers;
-create policy "admin manages drivers" on public.drivers
-  for all to authenticated using (true) with check (true);
--- الزائر (anon) ملوش أي وصول لجدول المناديب خالص
-revoke all on public.drivers from anon;
-grant select, insert, update, delete on public.drivers to authenticated;
-
--- 2) ربط كل طلب بالمندوب المسؤول عنه (علاقة حقيقية مش مجرد اسم مكتوب)
-alter table public.orders
-  add column if not exists driver_id uuid references public.drivers(id);
-create index if not exists orders_driver_id_idx on public.orders(driver_id);
-
--- 3) دالة "طلبات المندوب": بالرابط السري بس، وترجع طلباته هو بس
---    وبالحالات اللي تخصه بس (مقبول / خرج للتوصيل) — مش كل الطلبات
-create or replace function public.get_driver_orders(p_token text)
-returns json
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_driver public.drivers%rowtype;
-  v_orders json;
-begin
-  select * into v_driver
-    from public.drivers
-   where token = trim(coalesce(p_token, ''))
-     and active;
-  if not found then
-    return json_build_object('ok', false); -- رابط غلط أو مندوب متوقف: مفيش أي معلومة
-  end if;
-
-  select coalesce(json_agg(x order by x.created_at), '[]'::json)
-    into v_orders
-    from (
-      select o.id, o.customer_name, o.phone, o.address, o.payment,
-             o.items, o.fee, o.total, o.status, o.created_at
-        from public.orders o
-       where o.driver_id = v_driver.id
-         and o.status in ('مقبول', 'خرج للتوصيل')
-    ) x;
-
-  return json_build_object('ok', true, 'driver', v_driver.name, 'orders', v_orders);
-end;
-$$;
-
--- 4) دالة تحديث الحالة من المندوب: للأمام بس، وعلى طلباته هو بس
---    مقبول ← خرج للتوصيل ← اتسلّم ... ومفيش غيرهم
-create or replace function public.driver_set_status(
-  p_token text, p_order_id bigint, p_status text
-)
-returns json
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_driver_id uuid;
-  v_expected text;
-  v_n int;
-begin
-  select id into v_driver_id
-    from public.drivers
-   where token = trim(coalesce(p_token, ''))
-     and active;
-  if not found then
-    return json_build_object('ok', false, 'msg', 'الرابط ده مش شغال');
-  end if;
-
-  -- الانتقالات المسموحة للمندوب (للأمام بس)
-  if p_status = 'خرج للتوصيل' then
-    v_expected := 'مقبول';
-  elsif p_status = 'اتسلّم' then
-    v_expected := 'خرج للتوصيل';
-  else
-    return json_build_object('ok', false, 'msg', 'الحالة دي مش مسموحة للمندوب');
-  end if;
-
-  -- التحديث بيحصل بس لو الطلب بتاع المندوب ده وبالحالة المتوقعة
-  update public.orders
-     set status = p_status
-   where id = p_order_id
-     and driver_id = v_driver_id
-     and status = v_expected;
-  get diagnostics v_n = row_count;
-
-  if v_n = 0 then
-    return json_build_object('ok', false, 'msg', 'الطلب اتغيّر أو مش متاح — حدّث الصفحة');
-  end if;
-  return json_build_object('ok', true, 'status', p_status);
-end;
-$$;
-
--- 5) صلاحيات التنفيذ: نقفل التلقائي بتاع PUBLIC الأول، وبعدين ندي المقصودين بس
-revoke execute on function public.get_driver_orders(text) from public;
-revoke execute on function public.driver_set_status(text, bigint, text) from public;
-grant execute on function public.get_driver_orders(text) to anon;
-grant execute on function public.get_driver_orders(text) to authenticated;
-grant execute on function public.driver_set_status(text, bigint, text) to anon;
-grant execute on function public.driver_set_status(text, bigint, text) to authenticated;
-
--- 6) تحديث كاش Supabase عشان الدوال الجديدة تظهر فوراً
-notify pgrst, 'reload schema';
-
--- ============================================
--- خلص ✅ دلوقتي جدول المناديب جاهز والدوال شغالة
--- الخطوة الجاية: رفع صفحة driver.html على GitHub
--- ============================================
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>طلبات التوصيل — أليكس شوب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',system-ui,sans-serif}
+body{background:#f3f4f6;color:#1a1a1a}
+header{background:#1f2937;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10}
+header .wrap{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{font-weight:800;font-size:1.1rem}
+.logo small{display:block;font-size:.72rem;font-weight:400;opacity:.8}
+.rbtn{background:#374151;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:.85rem}
+main{max-width:720px;margin:0 auto;padding:16px}
+.order{background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:12px}
+.order .top{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.order .id{font-weight:800;color:#15803d;font-size:1.05rem}
+.badge{border-radius:999px;padding:3px 12px;font-size:.78rem;font-weight:800;color:#fff}
+.badge.b1{background:#2563eb}
+.badge.b2{background:#d97706}
+.meta{font-size:.88rem;margin-top:6px;color:#374151}
+.cbtns{display:flex;gap:8px;margin-top:8px}
+.cbtn{flex:1;text-align:center;background:#f3f4f6;border:1.5px solid #d1d5db;border-radius:9px;padding:8px 6px;font-weight:700;font-size:.85rem;text-decoration:none;color:#1a1a1a}
+.cbtn.wa{background:#dcfce7;border-color:#86efac;color:#166534}
+.items{font-size:.85rem;margin-top:10px;background:#f9fafb;border-radius:8px;padding:8px 10px}
+.tot{font-weight:800;margin-top:8px;font-size:1rem}
+.act{width:100%;margin-top:12px;border:none;border-radius:10px;padding:13px;font-weight:800;font-size:1rem;cursor:pointer;color:#fff}
+.act.go{background:#d97706}
+.act.done{background:#16a34a}
+.act:disabled{background:#9ca3af;cursor:not-allowed}
+.empty{text-align:center;color:#6b7280;padding:50px 10px;font-size:1.05rem}
+.errbox{max-width:420px;margin:70px auto;background:#fff;border-radius:16px;padding:30px 22px;box-shadow:0 2px 12px rgba(0,0,0,.1);text-align:center}
+.errbox h2{margin-bottom:8px}
+.errbox p{font-size:.88rem;color:#666}
+.note{text-align:center;color:#9ca3af;font-size:.75rem;margin-top:18px}
+.msg{border-radius:10px;padding:10px 14px;font-size:.85rem;font-weight:700;margin-bottom:12px;display:none}
+.msg.err{display:block;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+.spin{text-align:center;color:#9ca3af;padding:40px 0}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+ <div class="logo">🛵 طلبات التوصيل<small id="drvName">أليكس شوب</small></div>
+ <button class="rbtn" onclick="load()">🔄 تحديث</button>
+</div></header>
+<main>
+ <div class="msg" id="msg"></div>
+ <div id="app"><div class="spin">جاري التحميل...</div></div>
+ <div class="note">اللينك ده ليك انت بس — متبعتوش لأي حد تاني.</div>
+</main>
+<script>
+// ================== إعدادات قاعدة البيانات ==================
+const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
+const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
+// ============================================================
+const TOKEN_PARAM=new URLSearchParams(location.search).get('t')||'';
+const app=document.getElementById('app');
+let DRIVER='',busy=false;
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function waNum(p){let d=String(p).replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
+async function rpc(fn,body){
+ const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+fn,{
+  method:'POST',
+  headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},
+  body:JSON.stringify(body)});
+ if(!r.ok)throw 0;
+ return r.json();
+}
+function showMsg(t){
+ const m=document.getElementById('msg');m.textContent=t;m.className='msg err';
+ setTimeout(()=>{m.className='msg'},6000);
+}
+async function load(){
+ if(!TOKEN_PARAM){app.innerHTML='<div class="errbox"><h2>⚠️ اللينك ناقص</h2><p>افتح اللينك اللي وصلك كامل، فيه كود في آخره.</p></div>';return}
+ try{
+  const d=await rpc('get_driver_orders',{p_token:TOKEN_PARAM});
+  if(!d||!d.ok){app.innerHTML='<div class="errbox"><h2>🔒 اللينك ده مش شغال</h2><p>ممكن يكون اتلغى أو اتبدل. كلم صاحب المتجر يبعتلك اللينك الجديد.</p></div>';return}
+  DRIVER=d.driver||'';
+  document.getElementById('drvName').textContent='أهلاً '+DRIVER+' 👋';
+  render(d.orders||[]);
+ }catch(e){
+  app.innerHTML='<div class="spin">حصلت مشكلة في الاتصال — <a href="" style="color:#15803d;font-weight:700">جرّب تاني</a></div>';
+ }
+}
+function render(orders){
+ if(!orders.length){
+  app.innerHTML='<div class="empty">🎉 مفيش طلبات عليك دلوقتي<br><small style="font-size:.8rem;color:#9ca3af">أول ما صاحب المتجر يعيّنلك طلب هيظهر هنا</small></div>';
+  return;
+ }
+ app.innerHTML=orders.map(o=>{
+  const out=o.status==='خرج للتوصيل';
+  return `<div class="order">
+  <div class="top"><span class="id">AX-${o.id}</span>
+   <span class="badge ${out?'b2':'b1'}">${out?'🛵 خرج للتوصيل':'📦 جاهز للتوصيل'}</span></div>
+  <div class="meta">👤 <b>${esc(o.customer_name)}</b></div>
+  <div class="meta">📍 ${esc(o.address)}</div>
+  <div class="meta">💳 ${esc(o.payment)} — التحصيل: <b>${o.total} ج</b></div>
+  <div class="cbtns">
+   <a class="cbtn" href="tel:${esc(o.phone)}">📞 اتصل بالعميل</a>
+   <a class="cbtn wa" target="_blank" href="https://wa.me/${waNum(o.phone)}">💬 واتساب</a>
+  </div>
+  <div class="items">${(o.items||[]).map(x=>esc(x.name)+' × '+x.qty+(x.store?' — '+esc(x.store):'')).join('<br>')}</div>
+  ${out
+   ?`<button class="act done" id="btn-${o.id}" onclick="markDone(${o.id})">✅ تم التسليم</button>`
+   :`<button class="act go" id="btn-${o.id}" onclick="markOut(${o.id})">🛵 ابدأ التوصيل</button>`}
+ </div>`}).join('');
+}
+async function setStatus(id,st,btn){
+ if(busy)return;
+ busy=true;btn.disabled=true;btn.textContent='لحظة...';
+ try{
+  const d=await rpc('driver_set_status',{p_token:TOKEN_PARAM,p_order_id:id,p_status:st});
+  if(!d||!d.ok){showMsg(d&&d.msg?d.msg:'حصلت مشكلة — حدّث الصفحة');busy=false;await load();return}
+  busy=false;
+  await load();
+ }catch(e){showMsg('حصلت مشكلة في الاتصال — جرّب تاني');busy=false;load()}
+}
+function markOut(id){setStatus(id,'خرج للتوصيل',document.getElementById('btn-'+id))}
+function markDone(id){
+ if(!confirm('متأكد إن الطلب AX-'+id+' اتسلّم للعميل؟'))return;
+ setStatus(id,'اتسلّم',document.getElementById('btn-'+id));
+}
+load();
+// تحديث تلقائي كل دقيقة
+setInterval(()=>{if(!busy)load()},60000);
+</script>
+</body>
+</html>
