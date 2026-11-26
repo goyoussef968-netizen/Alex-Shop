@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alex Shop | أليكس شوب - توصيل أكل وبقالة في العجمي</title>
+<title>تابع طلبك | أليكس شوب</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -13,71 +13,53 @@ header{background:#16a34a;color:#fff;padding:14px 16px;position:sticky;top:0;z-i
 header .wrap{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
 .logo{font-size:1.4rem;font-weight:800;cursor:pointer}
 .logo small{font-size:.7rem;font-weight:400;display:block;opacity:.9}
-#cartBtn{background:#fff;color:#16a34a;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.95rem;cursor:pointer;position:relative}
-#trackBtn{background:rgba(255,255,255,.18);color:#fff;border:1.5px solid #fff;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.85rem;cursor:pointer;margin-inline-end:8px}
-#cartCount{position:absolute;top:-6px;left:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:.75rem;display:flex;align-items:center;justify-content:center}
+.hbtn{background:#fff;color:#16a34a;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.95rem;cursor:pointer}
 main{max-width:720px;margin:0 auto;padding:16px}
-.hero{background:linear-gradient(135deg,#16a34a,#0d7a37);color:#fff;border-radius:16px;padding:24px 20px;margin-bottom:20px}
-.hero h1{font-size:1.5rem;margin-bottom:6px}
-.hero p{opacity:.92;font-size:.95rem}
-h2.sec{font-size:1.15rem;margin:18px 0 12px}
-.store{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer;display:flex;gap:12px;align-items:center}
-.store .icon{width:52px;height:52px;border-radius:12px;background:#e8f7ee;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
-.store h3{font-size:1.05rem}
-.store .meta{font-size:.8rem;color:#666;margin-top:2px}
-.badge{display:inline-block;background:#e8f7ee;color:#15803d;font-size:.72rem;border-radius:10px;padding:1px 8px;margin-inline-end:4px}
-.back{background:none;border:none;color:#16a34a;font-weight:700;font-size:.95rem;cursor:pointer;margin-bottom:10px}
-.prod{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.prod .info{flex:1}
-.prod .name{font-weight:700;font-size:.95rem}
-.prod .unit{font-size:.75rem;color:#888}
-.prod .price{color:#15803d;font-weight:700;font-size:.9rem;margin-top:2px}
-.addbtn{background:#16a34a;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:.9rem}
-.stepper{display:flex;align-items:center;gap:10px}
-.stepper button{width:30px;height:30px;border-radius:8px;border:1.5px solid #16a34a;background:#fff;color:#16a34a;font-size:1.1rem;font-weight:800;cursor:pointer;line-height:1}
-.stepper .q{font-weight:800;min-width:18px;text-align:center}
 .panel{background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px}
-.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
-.row:last-child{border-bottom:none}
-.row .nm{flex:1}
-.row .rm{color:#dc2626;background:none;border:none;cursor:pointer;font-size:.8rem}
-.totalrow{display:flex;justify-content:space-between;padding:6px 0;font-size:.95rem}
-.totalrow.grand{font-weight:800;font-size:1.1rem;border-top:2px solid #eee;margin-top:6px;padding-top:10px}
+label{display:block;font-weight:700;font-size:.88rem;margin:12px 0 4px}
+input{width:100%;padding:11px 12px;border:1.5px solid #d1d5db;border-radius:10px;font-size:1rem;background:#fff}
+input:focus{outline:none;border-color:#16a34a}
 .cta{display:block;width:100%;background:#16a34a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1.05rem;font-weight:800;cursor:pointer;margin-top:14px}
 .cta:disabled{background:#9ca3af;cursor:not-allowed}
-label{display:block;font-weight:700;font-size:.88rem;margin:12px 0 4px}
-input,select{width:100%;padding:11px 12px;border:1.5px solid #d1d5db;border-radius:10px;font-size:1rem;background:#fff}
-input:focus{outline:none;border-color:#16a34a}
-.err{color:#dc2626;font-size:.8rem;margin-top:4px;display:none}
+.err{color:#dc2626;font-size:.85rem;margin-top:10px;display:none;text-align:center}
 .err.show{display:block}
-.pay{display:flex;gap:10px;margin-top:6px}
-.pay label.opt{flex:1;border:1.5px solid #d1d5db;border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-weight:700;font-size:.85rem;margin:0}
-.pay input{display:none}
-.pay input:checked+span{color:#16a34a}
-.pay label.opt:has(input:checked){border-color:#16a34a;background:#e8f7ee}
-.confirm{text-align:center;padding:30px 10px}
-.confirm .check{width:74px;height:74px;border-radius:50%;background:#16a34a;color:#fff;font-size:2.2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.confirm h2{margin-bottom:8px}
-.confirm .num{background:#e8f7ee;color:#15803d;font-weight:800;border-radius:10px;padding:8px 18px;display:inline-block;margin:10px 0;font-size:1.1rem}
-.empty{text-align:center;color:#888;padding:40px 0}
-footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color:#999;font-size:.75rem}
-.how{display:flex;gap:10px;margin-bottom:8px}
-.how .step{flex:1;background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.how .step .n{width:30px;height:30px;border-radius:50%;background:#16a34a;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 6px}
-.how .step p{font-size:.78rem;font-weight:600}
-.offline{background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;border-radius:10px;padding:10px 14px;font-size:.8rem;margin-bottom:14px;display:none}
-.disc{display:flex;gap:8px;margin-top:12px}
-.disc input{flex:1}
-.disc .addbtn{white-space:nowrap}
+.steps{display:flex;justify-content:space-between;margin:18px 0 6px;position:relative}
+.steps::before{content:'';position:absolute;top:17px;right:12%;left:12%;height:4px;background:#e5e7eb;border-radius:2px}
+.step{flex:1;text-align:center;position:relative;z-index:1}
+.step .dot{width:34px;height:34px;border-radius:50%;background:#e5e7eb;color:#9ca3af;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:1rem;font-weight:800}
+.step.done .dot{background:#16a34a;color:#fff}
+.step p{font-size:.72rem;font-weight:700;color:#9ca3af}
+.step.done p{color:#15803d}
+.cancelled{background:#fef2f2;border:1.5px solid #fca5a5;color:#b91c1c;border-radius:12px;padding:14px;text-align:center;font-weight:800;margin:14px 0}
+.onum{background:#e8f7ee;color:#15803d;font-weight:800;border-radius:10px;padding:8px 18px;display:inline-block;font-size:1.1rem}
+.items{font-size:.85rem;margin-top:10px;background:#f9fafb;border-radius:8px;padding:8px 10px}
+.tot{font-weight:800;margin-top:8px}
+.meta{font-size:.8rem;color:#666;margin-top:4px}
+.driver{background:#eff6ff;border:1.5px solid #93c5fd;color:#1e3a8a;border-radius:12px;padding:12px 14px;margin:14px 0;text-align:center;font-size:.95rem}
+.dbtns{display:flex;gap:8px;margin-top:10px;justify-content:center}
+.dbtn{background:#16a34a;color:#fff;border-radius:10px;padding:8px 18px;font-weight:700;font-size:.88rem;text-decoration:none}
+.dbtn.wa{background:#25d366}
 .fab{position:fixed;bottom:18px;left:18px;width:54px;height:54px;border-radius:50%;background:#25d366;color:#fff;font-size:1.6rem;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.25);text-decoration:none;z-index:20}
+footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color:#999;font-size:.75rem}
 </style>
 </head>
 <body>
 <header><div class="wrap">
-<div class="logo" onclick="go('home')">🛒 أليكس شوب<small>توصيل من محلات العجمي لباب بيتك</small></div>
-<div><button id="trackBtn" onclick="location.href='track.html'">📦 تابع طلبك</button><button id="cartBtn" onclick="go('cart')">السلة <span id="cartCount">0</span></button></div>
+<div class="logo" onclick="location.href='index.html'">🛒 أليكس شوب<small>توصيل من محلات العجمي لباب بيتك</small></div>
+<button class="hbtn" onclick="location.href='index.html'">المحلات</button>
 </div></header>
-<main id="app"></main>
+<main>
+<div class="panel">
+ <h2 style="text-align:center">📦 تابع حالة طلبك</h2>
+ <label>رقم الطلب</label>
+ <input id="fOrder" inputmode="numeric" placeholder="مثال: 12" dir="ltr" style="text-align:center">
+ <label>رقم الموبايل اللي طلبت بيه</label>
+ <input id="fPhone" inputmode="tel" placeholder="01xxxxxxxxx" dir="ltr" style="text-align:center">
+ <button class="cta" id="trackBtn" onclick="track()">شوف الحالة</button>
+ <div class="err" id="errMsg">رقم الطلب أو الموبايل غلط. اتأكد منهم وجرب تاني.</div>
+</div>
+<div id="result"></div>
+</main>
 <footer>Alex Shop — أليكس شوب، توصيل من محلات العجمي لباب بيتك.</footer>
 <script>
 // ================== إعدادات قاعدة البيانات ==================
@@ -87,208 +69,85 @@ const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
 // لو سيبته فاضي زرار الدعم مش هيظهر
 const SUPPORT_WA='201202255463';
 // ============================================================
-const K_CART='alexshop_cart_v1';
-const K_DISC='alexshop_discount';
-const DEFAULT_STORES=[
- {id:'s1',name:'سوبر ماركت النور',cat:'بقالة وسوبر ماركت',icon:'🏪',time:'30-45 دقيقة',min:50,products:[
-  {id:'p1',name:'أرز مصري فاخر',unit:'كيلو',price:38},{id:'p2',name:'سكر',unit:'كيلو',price:32},
-  {id:'p3',name:'زيت عباد الشمس',unit:'700 مل',price:75},{id:'p4',name:'مكرونة',unit:'400 جم',price:14},
-  {id:'p5',name:'شاي ليبتون',unit:'100 فتلة',price:85},{id:'p6',name:'جبنة رومي',unit:'كيلو',price:280}]},
- {id:'s2',name:'خضار وفاكهة الحاج سيد',cat:'خضار وفاكهة',icon:'🥬',time:'25-40 دقيقة',min:30,products:[
-  {id:'p1',name:'طماطم',unit:'كيلو',price:18},{id:'p2',name:'بطاطس',unit:'كيلو',price:16},
-  {id:'p3',name:'بصل',unit:'كيلو',price:20},{id:'p4',name:'موز',unit:'كيلو',price:35},
-  {id:'p5',name:'برتقال',unit:'كيلو',price:22},{id:'p6',name:'خيار',unit:'كيلو',price:20}]},
- {id:'s3',name:'مخبز العائلة',cat:'مخبوزات',icon:'🥐',time:'20-30 دقيقة',min:20,products:[
-  {id:'p1',name:'عيش بلدي',unit:'5 أرغفة',price:15},{id:'p2',name:'عيش فينو',unit:'5 أرغفة',price:20},
-  {id:'p3',name:'كرواسون بالشوكولاتة',unit:'قطعة',price:18},{id:'p4',name:'باتيه باللحمة',unit:'قطعة',price:22},
-  {id:'p5',name:'قطر الشام',unit:'كيلو',price:90}]},
- {id:'s4',name:'بن البرازيلي',cat:'قهوة ومحمصة',icon:'☕',time:'35-50 دقيقة',min:40,products:[
-  {id:'p1',name:'بن تركي سادة',unit:'ربع كيلو',price:95},{id:'p2',name:'بن فرنساوي',unit:'ربع كيلو',price:105},
-  {id:'p3',name:'مكسرات مشكلة',unit:'ربع كيلو',price:120},{id:'p4',name:'لب سوري',unit:'ربع كيلو',price:65}]}
-];
-let STORES=DEFAULT_STORES;
-async function loadStores(){
- try{
-  const r=await fetch(SUPABASE_URL+'/rest/v1/stores?select=*&order=name',{headers:{apikey:SUPABASE_KEY}});
-  if(!r.ok)throw 0;
-  const d=await r.json();
-  if(d.length)STORES=d.map(x=>({id:x.id,name:x.name,cat:x.cat,icon:x.icon,time:x.delivery_time,min:x.min_order,products:x.products||[]}));
- }catch(e){/* لو مفيش نت نعرض البيانات الافتراضية */}
- render();
-}
-function getStores(){return STORES}
-function getCart(){try{return JSON.parse(localStorage.getItem(K_CART))||[]}catch(e){return[]}}
-function setCart(c){localStorage.setItem(K_CART,JSON.stringify(c));updateCount()}
-function updateCount(){document.getElementById('cartCount').textContent=getCart().reduce((a,i)=>a+i.qty,0)}
-function findProd(pid){for(const s of getStores())for(const p of s.products)if(s.id+'/'+p.id===pid)return{...p,storeId:s.id,storeName:s.name};return null}
-function addToCart(pid){const c=getCart();const f=c.find(i=>i.id===pid);if(f)f.qty++;else c.push({id:pid,qty:1});setCart(c);render()}
-function decCart(pid){let c=getCart();const f=c.find(i=>i.id===pid);if(!f)return;f.qty--;if(f.qty<=0)c=c.filter(i=>i.id!==pid);setCart(c);render()}
-function cartQty(pid){const f=getCart().find(i=>i.id===pid);return f?f.qty:0}
-function fee(){return 20}
-function getDisc(){try{return JSON.parse(localStorage.getItem(K_DISC))||null}catch(e){return null}}
-function setDisc(d){try{if(d)localStorage.setItem(K_DISC,JSON.stringify(d));else localStorage.removeItem(K_DISC)}catch(e){}}
-function discAmount(sub){const d=getDisc();if(!d||sub<=0)return 0;return Math.min(d.value,sub+fee())}
-function go(v,arg){state={view:v,arg};window.scrollTo(0,0);render()}
-let state={view:'home'};
-const app=document.getElementById('app');
+const STEPS=['جديد','مقبول','خرج للتوصيل','اتسلّم'];
+const ICONS=['📝','✅','🛵','🎉'];
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
-function render(){
- updateCount();
- if(state.view==='home'){
-  const stores=getStores();
-  app.innerHTML=`
-  <div class="hero"><h1>أهلاً بيك في أليكس شوب 👋</h1><p>اطلب أكل وبقالة من محلات العجمي، ويوصلك لباب البيت.</p></div>
-  <h2 class="sec">إزاي بيشتغل؟</h2>
-  <div class="how">
-   <div class="step"><div class="n">1</div><p>اختار المحل</p></div>
-   <div class="step"><div class="n">2</div><p>ضيف للسلة</p></div>
-   <div class="step"><div class="n">3</div><p>استلم عند باب بيتك</p></div>
-  </div>
-  <h2 class="sec">المحلات</h2>
-  ${stores.map(s=>`<div class="store" onclick="go('store','${s.id}')">
-   <div class="icon">${s.icon||'🏪'}</div>
-   <div><h3>${esc(s.name)}</h3><div class="meta">${esc(s.cat)}</div>
-   <div class="meta"><span class="badge">⏱ ${esc(s.time)}</span><span class="badge">حد أدنى ${s.min} ج</span></div></div>
-  </div>`).join('')||'<div class="empty">مفيش محلات لسه</div>'}`;
- }
- else if(state.view==='store'){
-  const s=getStores().find(x=>x.id===state.arg);if(!s)return go('home');
-  app.innerHTML=`
-  <button class="back" onclick="go('home')">→ رجوع للمحلات</button>
-  <div class="panel"><h2>${s.icon||'🏪'} ${esc(s.name)}</h2>
-  <div class="meta" style="color:#666;font-size:.85rem;margin-top:4px">${esc(s.cat)} · ⏱ ${esc(s.time)} · حد أدنى ${s.min} ج</div></div>
-  ${s.products.map(p=>{const pid=s.id+'/'+p.id,q=cartQty(pid);return `<div class="prod">
-   <div class="info"><div class="name">${esc(p.name)}</div><div class="unit">${esc(p.unit)}</div><div class="price">${p.price} ج</div></div>
-   ${q===0?`<button class="addbtn" onclick="addToCart('${pid}')">ضيف</button>`
-    :`<div class="stepper"><button onclick="addToCart('${pid}')">+</button><span class="q">${q}</span><button onclick="decCart('${pid}')">−</button></div>`}
-  </div>`}).join('')}`;
- }
- else if(state.view==='cart'){
-  const c=getCart();let sub=0;
-  const rows=c.map(i=>{const p=findProd(i.id);if(!p)return'';sub+=p.price*i.qty;
-   return `<div class="row"><span class="nm">${esc(p.name)} <small style="color:#888">(${esc(p.storeName)})</small></span>
-   <div class="stepper"><button onclick="addToCart('${i.id}')">+</button><span class="q">${i.qty}</span><button onclick="decCart('${i.id}')">−</button></div>
-   <b style="min-width:60px;text-align:left">${p.price*i.qty} ج</b></div>`}).join('');
-  const d=getDisc();
-  const disc=c.length?discAmount(sub):0;
-  const tot=Math.max(0,sub+(c.length?fee():0)-disc);
-  app.innerHTML=`
-  <button class="back" onclick="go('home')">→ كمّل تسوّق</button>
-  <div class="panel"><h2>🧺 السلة</h2>
-  ${c.length?rows+`
-   <div class="disc">
-    <input id="fDisc" dir="ltr" style="text-align:center" placeholder="كود الخصم" value="${d?esc(d.code):''}">
-    <button class="addbtn" id="discBtn" onclick="applyDiscount()">طبّق</button>
-   </div>
-   <div class="err" id="discMsg"></div>
-   <div class="totalrow" style="margin-top:10px"><span>المجموع</span><span>${sub} ج</span></div>
-   <div class="totalrow"><span>رسوم التوصيل</span><span>${fee()} ج</span></div>
-   ${disc>0?`<div class="totalrow" style="color:#15803d;font-weight:700"><span>خصم (${esc(d.code)}) <a onclick="rmDisc()" style="color:#dc2626;cursor:pointer">✕</a></span><span>−${disc} ج</span></div>`:''}
-   <div class="totalrow grand"><span>الإجمالي</span><span>${tot} ج</span></div>
-   <button class="cta" onclick="go('checkout')">كمّل الطلب</button>`
-  :'<div class="empty">السلة فاضية 🛒<br><br><button class="addbtn" onclick="go(\'home\')">اتفرج على المحلات</button></div>'}
-  </div>`;
- }
- else if(state.view==='checkout'){
-  app.innerHTML=`
-  <button class="back" onclick="go('cart')">→ رجوع للسلة</button>
-  <div class="panel"><h2>📦 بيانات التوصيل</h2>
-   <label>الاسم</label><input id="fName" placeholder="اسمك الكامل"><div class="err" id="eName">اكتب اسمك</div>
-   <label>رقم الموبايل</label><input id="fPhone" inputmode="tel" placeholder="01xxxxxxxxx"><div class="err" id="ePhone">اكتب رقم موبايل صحيح (11 رقم يبدأ بـ 01)</div>
-   <label>العنوان بالتفصيل</label><input id="fAddr" placeholder="المنطقة، الشارع، رقم العمارة والشقة"><div class="err" id="eAddr">اكتب العنوان</div>
-   <label>طريقة الدفع</label>
-   <div class="pay">
-    <label class="opt"><input type="radio" name="pay" value="كاش عند الاستلام" checked><span>💵 كاش عند الاستلام</span></label>
-    <label class="opt"><input type="radio" name="pay" value="فودافون كاش"><span>📱 فودافون كاش</span></label>
-   </div>
-   <button class="cta" id="orderBtn" onclick="placeOrder()">أكّد الطلب</button>
-  </div>`;
- }
- else if(state.view==='confirm'){
-  const o=state.arg;
-  app.innerHTML=`
-  <div class="panel confirm">
-   <div class="check">✓</div>
-   <h2>طلبك اتسجّل يا ${esc(o.name.split(' ')[0])}! 🎉</h2>
-   <p style="color:#666">رقم الطلب:</p>
-   <div class="num">${o.id}</div>
-   ${o.discount>0?`<p style="color:#15803d;margin-top:8px;font-weight:700">🎟 اتحسب ليك خصم −${o.discount} ج</p>`:''}
-   <p style="color:#666;margin-top:8px">الإجمالي: <b>${o.total} ج</b> (${esc(o.payment)})</p>
-   <p style="color:#666;margin-top:4px">⏱ التوصيل خلال 45-60 دقيقة إن شاء الله</p>
-   <p style="font-size:.8rem;color:#666;margin-top:12px">هنتواصل معاك على رقمك لتأكيد الطلب.</p>
-   <button class="cta" onclick="location.href='track.html?o=${o.id}'">📦 تابع حالة طلبك</button>
-   <button class="cta" style="background:#e5e7eb;color:#374151;margin-top:8px" onclick="go('home')">ارجع للرئيسية</button>
-  </div>`;
- }
-}
-async function applyDiscount(){
- const inp=document.getElementById('fDisc');
- const code=inp.value.trim();
- if(!code)return;
- const btn=document.getElementById('discBtn');btn.disabled=true;btn.textContent='بنشيك...';
- let errText=null;
+function orderNum(v){v=String(v).trim().toUpperCase().replace(/^AX[-\s]?/,'').replace(/\D/g,'');return v?parseInt(v,10):null}
+function waNum(p){let d=String(p).replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
+async function track(){
+ const id=orderNum(document.getElementById('fOrder').value);
+ const ph=document.getElementById('fPhone').value.trim();
+ const err=document.getElementById('errMsg');err.classList.remove('show');
+ document.getElementById('result').innerHTML='';
+ if(!id||ph.replace(/\D/g,'').length<10){err.classList.add('show');return}
+ const btn=document.getElementById('trackBtn');btn.disabled=true;btn.textContent='بنبحث...';
  try{
-  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/check_discount',{method:'POST',
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_order_status',{method:'POST',
    headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
-   body:JSON.stringify({p_code:code})});
+   body:JSON.stringify({p_id:id,p_phone:ph})});
   if(!r.ok)throw 0;
-  const v=await r.json();
-  if(v===null||typeof v!=='number'){
-   setDisc(null);
-   errText='الكود ده مش صح أو مش شغال دلوقتي';
-  }else{
-   setDisc({code:code.toUpperCase(),value:v});
+  const o=await r.json();
+  if(!o){err.classList.add('show');return}
+  try{localStorage.setItem('alexshop_last_order',String(o.id));localStorage.setItem('alexshop_phone',ph)}catch(e){}
+  renderOrder(o);
+ }catch(e){
+  err.textContent='حصلت مشكلة في الاتصال. اتأكد من الإنترنت وجرب تاني.';
+  err.classList.add('show');
+ }
+ btn.disabled=false;btn.textContent='شوف الحالة';
+}
+function renderOrder(o){
+ const isCancelled=(o.status==='ملغي');
+ const idx=STEPS.indexOf(o.status);
+ let html='<div class="panel" style="text-align:center">';
+ html+='<p style="color:#666">رقم الطلب:</p><div class="onum">AX-'+o.id+'</div>';
+ html+='<div class="meta">🕐 '+new Date(o.created_at).toLocaleString('ar-EG')+'</div>';
+ if(isCancelled){
+  html+='<div class="cancelled">❌ الطلب ده اتلغى. لو عندك استفسار كلمنا.</div>';
+ }else{
+  html+='<div class="steps">'+STEPS.map((s,i)=>
+   '<div class="step '+(i<=idx?'done':'')+'"><div class="dot">'+(i<idx?'✓':ICONS[i])+'</div><p>'+s+'</p></div>'
+  ).join('')+'</div>';
+  if(idx===0)html+='<div class="meta" style="margin-top:8px">طلبك اتسجّل وبنراجعه 👍</div>';
+  else if(idx===1)html+='<div class="meta" style="margin-top:8px">طلبك اتقبل وبنجهزه 👨‍🍳</div>';
+  else if(idx===2)html+='<div class="meta" style="margin-top:8px">الطلب خرج للتوصيل، في الطريق ليك 🛵</div>';
+  else if(idx===3)html+='<div class="meta" style="margin-top:8px">اتسلّم! بالهنا والشفا 🎉</div>';
+ }
+ if(!isCancelled&&(o.driver_name||o.driver_phone)){
+  html+='<div class="driver">🛵 المندوب اللي جايلك: <b>'+esc(o.driver_name||'')+'</b>';
+  if(o.driver_phone){
+   html+='<div class="dbtns"><a class="dbtn" href="tel:'+esc(o.driver_phone)+'">📞 اتصل بالمندوب</a>'
+        +'<a class="dbtn wa" target="_blank" href="https://wa.me/'+waNum(o.driver_phone)+'">💬 واتساب</a></div>';
   }
- }catch(e){
-  errText='حصلت مشكلة في الاتصال. اتأكد من الإنترنت وجرب تاني.';
+  html+='</div>';
  }
- render();
- if(errText){
-  const m=document.getElementById('discMsg');
-  if(m){m.textContent=errText;m.classList.add('show');}
- }
+ html+='<div style="text-align:right;margin-top:14px"><b>الأصناف:</b>';
+ html+='<div class="items">'+(o.items||[]).map(x=>esc(x.name)+' × '+x.qty+' ('+(x.price*x.qty)+' ج) — '+esc(x.store||'')).join('<br>')+'</div>';
+ html+='<div class="tot">الإجمالي: '+o.total+' ج</div>';
+ html+='<div class="meta">شامل توصيل '+(o.fee||0)+' ج'+(o.discount>0?' + خصم −'+o.discount+' ج':'')+'</div></div>';
+ html+='<button class="cta" onclick="track()">🔄 تحديث الحالة</button>';
+ html+='</div>';
+ document.getElementById('result').innerHTML=html;
 }
-function rmDisc(){setDisc(null);render()}
-async function placeOrder(){
- const n=document.getElementById('fName').value.trim(),
-       ph=document.getElementById('fPhone').value.trim(),
-       a=document.getElementById('fAddr').value.trim();
- let ok=true;
- const chk=(cond,id)=>{document.getElementById(id).classList.toggle('show',!cond);if(!cond)ok=false};
- chk(n.length>=2,'eName');chk(/^01[0-9]{9}$/.test(ph.replace(/\s/g,'')),'ePhone');chk(a.length>=5,'eAddr');
- if(!ok)return;
- const btn=document.getElementById('orderBtn');btn.disabled=true;btn.textContent='جاري إرسال الطلب...';
- const c=getCart();let sub=0;
- const items=c.map(i=>{const p=findProd(i.id);sub+=p.price*i.qty;return{name:p.name,price:p.price,qty:i.qty,store:p.storeName}});
- const pay=document.querySelector('input[name=pay]:checked').value;
- const d=getDisc();
- const disc=discAmount(sub);
- const total=Math.max(0,sub+fee()-disc);
- try{
-  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/place_order',{method:'POST',
-   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
-   body:JSON.stringify({p_customer_name:n,p_phone:ph,p_address:a,p_payment:pay,p_items:items,p_subtotal:sub,p_fee:fee(),p_total:total,p_discount_code:d?d.code:null})});
-  if(!r.ok)throw 0;
-  const newId=await r.json();
-  setCart([]);setDisc(null);
-  try{localStorage.setItem('alexshop_phone',ph);localStorage.setItem('alexshop_last_order',String(newId))}catch(e){}
-  go('confirm',{id:'AX-'+newId,name:n,total:total,payment:pay,discount:disc});
- }catch(e){
-  btn.disabled=false;btn.textContent='أكّد الطلب';
-  alert('حصلت مشكلة في إرسال الطلب. اتأكد من الإنترنت وجرب تاني.');
- }
-}
+// لو جاي من صفحة التأكيد، عبّي رقم الطلب والموبايل لوحدهم
+try{
+ const q=new URLSearchParams(location.search);
+ const o=q.get('o');
+ if(o)document.getElementById('fOrder').value=o;
+ const savedPhone=localStorage.getItem('alexshop_phone');
+ if(savedPhone&&!document.getElementById('fPhone').value)document.getElementById('fPhone').value=savedPhone;
+ if(o&&document.getElementById('fPhone').value)track();
+}catch(e){}
 // زرار الدعم العائم (بيظهر لو رقم الدعم متسجل فوق)
 if(SUPPORT_WA){
  const a=document.createElement('a');
  a.className='fab';
- a.href='https://wa.me/'+SUPPORT_WA+'?text='+encodeURIComponent('السلام عليكم 👋 عندي استفسار عن أليكس شوب');
+ a.href='https://wa.me/'+SUPPORT_WA+'?text='+encodeURIComponent('السلام عليكم 👋 عندي استفسار عن طلبي من أليكس شوب');
  a.target='_blank';
  a.title='كلم الدعم واتساب';
  a.textContent='💬';
  document.body.appendChild(a);
 }
-loadStores();
 </script>
 </body>
 </html>
