@@ -35,6 +35,11 @@ input:focus{outline:none;border-color:#16a34a}
 .items{font-size:.85rem;margin-top:10px;background:#f9fafb;border-radius:8px;padding:8px 10px}
 .tot{font-weight:800;margin-top:8px}
 .meta{font-size:.8rem;color:#666;margin-top:4px}
+.driver{background:#eff6ff;border:1.5px solid #93c5fd;color:#1e3a8a;border-radius:12px;padding:12px 14px;margin:14px 0;text-align:center;font-size:.95rem}
+.dbtns{display:flex;gap:8px;margin-top:10px;justify-content:center}
+.dbtn{background:#16a34a;color:#fff;border-radius:10px;padding:8px 18px;font-weight:700;font-size:.88rem;text-decoration:none}
+.dbtn.wa{background:#25d366}
+.fab{position:fixed;bottom:18px;left:18px;width:54px;height:54px;border-radius:50%;background:#25d366;color:#fff;font-size:1.6rem;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.25);text-decoration:none;z-index:20}
 footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color:#999;font-size:.75rem}
 </style>
 </head>
@@ -60,11 +65,15 @@ footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color
 // ================== إعدادات قاعدة البيانات ==================
 const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
 const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
+// رقم واتساب الدعم بالكود الدولي من غير + ومن غير أصفار الأول — مثال: 201012345678
+// لو سيبته فاضي زرار الدعم مش هيظهر
+const SUPPORT_WA='';
 // ============================================================
 const STEPS=['جديد','مقبول','خرج للتوصيل','اتسلّم'];
 const ICONS=['📝','✅','🛵','🎉'];
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function orderNum(v){v=String(v).trim().toUpperCase().replace(/^AX[-\s]?/,'').replace(/\D/g,'');return v?parseInt(v,10):null}
+function waNum(p){let d=String(p).replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
 async function track(){
  const id=orderNum(document.getElementById('fOrder').value);
  const ph=document.getElementById('fPhone').value.trim();
@@ -104,9 +113,18 @@ function renderOrder(o){
   else if(idx===2)html+='<div class="meta" style="margin-top:8px">الطلب خرج للتوصيل، في الطريق ليك 🛵</div>';
   else if(idx===3)html+='<div class="meta" style="margin-top:8px">اتسلّم! بالهنا والشفا 🎉</div>';
  }
+ if(!isCancelled&&(o.driver_name||o.driver_phone)){
+  html+='<div class="driver">🛵 المندوب اللي جايلك: <b>'+esc(o.driver_name||'')+'</b>';
+  if(o.driver_phone){
+   html+='<div class="dbtns"><a class="dbtn" href="tel:'+esc(o.driver_phone)+'">📞 اتصل بالمندوب</a>'
+        +'<a class="dbtn wa" target="_blank" href="https://wa.me/'+waNum(o.driver_phone)+'">💬 واتساب</a></div>';
+  }
+  html+='</div>';
+ }
  html+='<div style="text-align:right;margin-top:14px"><b>الأصناف:</b>';
  html+='<div class="items">'+(o.items||[]).map(x=>esc(x.name)+' × '+x.qty+' ('+(x.price*x.qty)+' ج) — '+esc(x.store||'')).join('<br>')+'</div>';
- html+='<div class="tot">الإجمالي: '+o.total+' ج (شامل توصيل '+(o.fee||0)+' ج)</div></div>';
+ html+='<div class="tot">الإجمالي: '+o.total+' ج</div>';
+ html+='<div class="meta">شامل توصيل '+(o.fee||0)+' ج'+(o.discount>0?' + خصم −'+o.discount+' ج':'')+'</div></div>';
  html+='<button class="cta" onclick="track()">🔄 تحديث الحالة</button>';
  html+='</div>';
  document.getElementById('result').innerHTML=html;
@@ -120,6 +138,16 @@ try{
  if(savedPhone&&!document.getElementById('fPhone').value)document.getElementById('fPhone').value=savedPhone;
  if(o&&document.getElementById('fPhone').value)track();
 }catch(e){}
+// زرار الدعم العائم (بيظهر لو رقم الدعم متسجل فوق)
+if(SUPPORT_WA){
+ const a=document.createElement('a');
+ a.className='fab';
+ a.href='https://wa.me/'+SUPPORT_WA+'?text='+encodeURIComponent('السلام عليكم 👋 عندي استفسار عن طلبي من أليكس شوب');
+ a.target='_blank';
+ a.title='كلم الدعم واتساب';
+ a.textContent='💬';
+ document.body.appendChild(a);
+}
 </script>
 </body>
 </html>
