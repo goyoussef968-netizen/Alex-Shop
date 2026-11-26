@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex Shop | أليكس شوب - توصيل أكل وبقالة في العجمي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',system-ui,sans-serif}
+body{background:#f6f7f6;color:#1a1a1a;padding-bottom:80px}
+header{background:#16a34a;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .wrap{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.4rem;font-weight:800;cursor:pointer}
+.logo small{font-size:.7rem;font-weight:400;display:block;opacity:.9}
+#cartBtn{background:#fff;color:#16a34a;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.95rem;cursor:pointer;position:relative}
+#cartCount{position:absolute;top:-6px;left:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:.75rem;display:flex;align-items:center;justify-content:center}
+main{max-width:720px;margin:0 auto;padding:16px}
+.hero{background:linear-gradient(135deg,#16a34a,#0d7a37);color:#fff;border-radius:16px;padding:24px 20px;margin-bottom:20px}
+.hero h1{font-size:1.5rem;margin-bottom:6px}
+.hero p{opacity:.92;font-size:.95rem}
+h2.sec{font-size:1.15rem;margin:18px 0 12px}
+.store{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer;display:flex;gap:12px;align-items:center}
+.store .icon{width:52px;height:52px;border-radius:12px;background:#e8f7ee;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+.store h3{font-size:1.05rem}
+.store .meta{font-size:.8rem;color:#666;margin-top:2px}
+.badge{display:inline-block;background:#e8f7ee;color:#15803d;font-size:.72rem;border-radius:10px;padding:1px 8px;margin-inline-end:4px}
+.back{background:none;border:none;color:#16a34a;font-weight:700;font-size:.95rem;cursor:pointer;margin-bottom:10px}
+.prod{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.prod .info{flex:1}
+.prod .name{font-weight:700;font-size:.95rem}
+.prod .unit{font-size:.75rem;color:#888}
+.prod .price{color:#15803d;font-weight:700;font-size:.9rem;margin-top:2px}
+.addbtn{background:#16a34a;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:.9rem}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:30px;height:30px;border-radius:8px;border:1px solid #16a34a;background:#fff;color:#16a34a;font-size:1.1rem;font-weight:800;cursor:pointer;line-height:1}
+.stepper .q{font-weight:800;min-width:18px;text-align:center}
+.panel{background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
+.row:last-child{border-bottom:none}
+.row .nm{flex:1}
+.row .rm{color:#dc2626;background:none;border:none;cursor:pointer;font-size:.8rem}
+.totalrow{display:flex;justify-content:space-between;padding:6px 0;font-size:.95rem}
+.totalrow.grand{font-weight:800;font-size:1.1rem;border-top:2px solid #eee;margin-top:6px;padding-top:10px}
+.cta{display:block;width:100%;background:#16a34a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1.05rem;font-weight:800;cursor:pointer;margin-top:14px}
+.cta:disabled{background:#9ca3af;cursor:not-allowed}
+label{display:block;font-weight:700;font-size:.88rem;margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border:1.5px solid #d1d5db;border-radius:10px;font-size:1rem;background:#fff}
+input:focus{outline:none;border-color:#16a34a}
+.err{color:#dc2626;font-size:.8rem;margin-top:4px;display:none}
+.err.show{display:block}
+.pay{display:flex;gap:10px;margin-top:6px}
+.pay label.opt{flex:1;border:1.5px solid #d1d5db;border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-weight:700;font-size:.85rem;margin:0}
+.pay input{display:none}
+.pay input:checked+span{color:#16a34a}
+.pay label.opt:has(input:checked){border-color:#16a34a;background:#e8f7ee}
+.confirm{text-align:center;padding:30px 10px}
+.confirm .check{width:74px;height:74px;border-radius:50%;background:#16a34a;color:#fff;font-size:2.2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.confirm h2{margin-bottom:8px}
+.confirm .num{background:#e8f7ee;color:#15803d;font-weight:800;border-radius:10px;padding:8px 18px;display:inline-block;margin:10px 0;font-size:1.1rem}
+.note{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:10px 14px;font-size:.8rem;margin-bottom:14px}
+.empty{text-align:center;color:#888;padding:40px 0}
+footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color:#999;font-size:.75rem}
+.how{display:flex;gap:10px;margin-bottom:8px}
+.how .step{flex:1;background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.how .step .n{width:30px;height:30px;border-radius:50%;background:#16a34a;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 6px}
+.how .step p{font-size:.78rem;font-weight:600}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="logo" onclick="go('home')">🛒 أليكس شوب<small>توصيل من محلات العجمي لباب بيتك</small></div>
+<button id="cartBtn" onclick="go('cart')">السلة <span id="cartCount">0</span></button>
+</div></header>
+<main id="app"></main>
+<footer>Alex Shop — نسخة تجريبية. المتاجر والأسعار بيانات توضيحية ولا يتم إرسال أي طلب حقيقي.</footer>
+<script>
+const K_STORES='alexshop_stores_v1', K_CART='alexshop_cart_v1', K_ORDERS='alexshop_orders_v1';
+const DEFAULT_STORES=[
+ {id:'s1',name:'سوبر ماركت النور',cat:'بقالة وسوبر ماركت',icon:'🏪',time:'30-45 دقيقة',min:50,products:[
+  {id:'p1',name:'أرز مصري فاخر',unit:'كيلو',price:38},{id:'p2',name:'سكر',unit:'كيلو',price:32},
+  {id:'p3',name:'زيت عباد الشمس',unit:'700 مل',price:75},{id:'p4',name:'مكرونة',unit:'400 جم',price:14},
+  {id:'p5',name:'شاي ليبتون',unit:'100 فتلة',price:85},{id:'p6',name:'جبنة رومي',unit:'كيلو',price:280}]},
+ {id:'s2',name:'خضار وفاكهة الحاج سيد',cat:'خضار وفاكهة',icon:'🥬',time:'25-40 دقيقة',min:30,products:[
+  {id:'p1',name:'طماطم',unit:'كيلو',price:18},{id:'p2',name:'بطاطس',unit:'كيلو',price:16},
+  {id:'p3',name:'بصل',unit:'كيلو',price:20},{id:'p4',name:'موز',unit:'كيلو',price:35},
+  {id:'p5',name:'برتقال',unit:'كيلو',price:22},{id:'p6',name:'خيار',unit:'كيلو',price:20}]},
+ {id:'s3',name:'مخبز العائلة',cat:'مخبوزات',icon:'🥐',time:'20-30 دقيقة',min:20,products:[
+  {id:'p1',name:'عيش بلدي',unit:'5 أرغفة',price:15},{id:'p2',name:'عيش فينو',unit:'5 أرغفة',price:20},
+  {id:'p3',name:'كرواسون بالشوكولاتة',unit:'قطعة',price:18},{id:'p4',name:'باتيه باللحمة',unit:'قطعة',price:22},
+  {id:'p5',name:'قطر الشام',unit:'كيلو',price:90}]},
+ {id:'s4',name:'بن البرازيلي',cat:'قهوة ومحمصة',icon:'☕',time:'35-50 دقيقة',min:40,products:[
+  {id:'p1',name:'بن تركي سادة',unit:'ربع كيلو',price:95},{id:'p2',name:'بن فرنساوي',unit:'ربع كيلو',price:105},
+  {id:'p3',name:'مكسرات مشكلة',unit:'ربع كيلو',price:120},{id:'p4',name:'لب سوري',unit:'ربع كيلو',price:65}]}
+];
+function getStores(){try{const s=localStorage.getItem(K_STORES);if(s)return JSON.parse(s)}catch(e){}return DEFAULT_STORES}
+function getCart(){try{return JSON.parse(localStorage.getItem(K_CART))||[]}catch(e){return[]}}
+function setCart(c){localStorage.setItem(K_CART,JSON.stringify(c));updateCount()}
+function updateCount(){document.getElementById('cartCount').textContent=getCart().reduce((a,i)=>a+i.qty,0)}
+function findProd(pid){for(const s of getStores())for(const p of s.products)if(s.id+'/'+p.id===pid)return{...p,storeId:s.id,storeName:s.name};return null}
+function addToCart(pid){const c=getCart();const f=c.find(i=>i.id===pid);if(f)f.qty++;else c.push({id:pid,qty:1});setCart(c);render()}
+function decCart(pid){let c=getCart();const f=c.find(i=>i.id===pid);if(!f)return;f.qty--;if(f.qty<=0)c=c.filter(i=>i.id!==pid);setCart(c);render()}
+function cartQty(pid){const f=getCart().find(i=>i.id===pid);return f?f.qty:0}
+function fee(){return 20}
+function go(v,arg){state={view:v,arg};window.scrollTo(0,0);render()}
+let state={view:'home'};
+const app=document.getElementById('app');
+function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function render(){
+ updateCount();
+ if(state.view==='home'){
+  const stores=getStores();
+  app.innerHTML=`
+  <div class="hero"><h1>أهلاً بيك في أليكس شوب 👋</h1><p>اطلب أكل وبقالة من محلات العجمي، ويوصلك لباب البيت.</p></div>
+  <div class="note">نسخة تجريبية: المتاجر والأسعار بيانات توضيحية، ومفيش طلب حقيقي بيتبعت.</div>
+  <h2 class="sec">إزاي بيشتغل؟</h2>
+  <div class="how">
+   <div class="step"><div class="n">1</div><p>اختار المحل</p></div>
+   <div class="step"><div class="n">2</div><p>ضيف للسلة</p></div>
+   <div class="step"><div class="n">3</div><p>استلم عند باب بيتك</p></div>
+  </div>
+  <h2 class="sec">المحلات</h2>
+  ${stores.map(s=>`<div class="store" onclick="go('store','${s.id}')">
+   <div class="icon">${s.icon||'🏪'}</div>
+   <div><h3>${esc(s.name)}</h3><div class="meta">${esc(s.cat)}</div>
+   <div class="meta"><span class="badge">⏱ ${esc(s.time)}</span><span class="badge">حد أدنى ${s.min} ج</span></div></div>
+  </div>`).join('')||'<div class="empty">مفيش محلات لسه</div>'}`;
+ }
+ else if(state.view==='store'){
+  const s=getStores().find(x=>x.id===state.arg);if(!s)return go('home');
+  app.innerHTML=`
+  <button class="back" onclick="go('home')">→ رجوع للمحلات</button>
+  <div class="panel"><h2>${s.icon||'🏪'} ${esc(s.name)}</h2>
+  <div class="meta" style="color:#666;font-size:.85rem;margin-top:4px">${esc(s.cat)} · ⏱ ${esc(s.time)} · حد أدنى ${s.min} ج</div></div>
+  ${s.products.map(p=>{const pid=s.id+'/'+p.id,q=cartQty(pid);return `<div class="prod">
+   <div class="info"><div class="name">${esc(p.name)}</div><div class="unit">${esc(p.unit)}</div><div class="price">${p.price} ج</div></div>
+   ${q===0?`<button class="addbtn" onclick="addToCart('${pid}')">ضيف</button>`
+    :`<div class="stepper"><button onclick="addToCart('${pid}')">+</button><span class="q">${q}</span><button onclick="decCart('${pid}')">−</button></div>`}
+  </div>`}).join('')}`;
+ }
+ else if(state.view==='cart'){
+  const c=getCart();let sub=0;
+  const rows=c.map(i=>{const p=findProd(i.id);if(!p)return'';sub+=p.price*i.qty;
+   return `<div class="row"><span class="nm">${esc(p.name)} <small style="color:#888">(${esc(p.storeName)})</small></span>
+   <div class="stepper"><button onclick="addToCart('${i.id}')">+</button><span class="q">${i.qty}</span><button onclick="decCart('${i.id}')">−</button></div>
+   <b style="min-width:60px;text-align:left">${p.price*i.qty} ج</b></div>`}).join('');
+  const tot=sub+ (c.length?fee():0);
+  app.innerHTML=`
+  <button class="back" onclick="go('home')">→ كمّل تسوّق</button>
+  <div class="panel"><h2>🧺 السلة</h2>
+  ${c.length?rows+`
+   <div class="totalrow" style="margin-top:10px"><span>المجموع</span><span>${sub} ج</span></div>
+   <div class="totalrow"><span>رسوم التوصيل</span><span>${fee()} ج</span></div>
+   <div class="totalrow grand"><span>الإجمالي</span><span>${tot} ج</span></div>
+   <button class="cta" onclick="go('checkout')">كمّل الطلب</button>`
+  :'<div class="empty">السلة فاضية 🛒<br><br><button class="addbtn" onclick="go(\'home\')">اتفرج على المحلات</button></div>'}
+  </div>`;
+ }
+ else if(state.view==='checkout'){
+  app.innerHTML=`
+  <button class="back" onclick="go('cart')">→ رجوع للسلة</button>
+  <div class="panel"><h2>📦 بيانات التوصيل</h2>
+   <label>الاسم</label><input id="fName" placeholder="اسمك الكامل"><div class="err" id="eName">اكتب اسمك</div>
+   <label>رقم الموبايل</label><input id="fPhone" inputmode="tel" placeholder="01xxxxxxxxx"><div class="err" id="ePhone">اكتب رقم موبايل صحيح (11 رقم يبدأ بـ 01)</div>
+   <label>العنوان بالتفصيل</label><input id="fAddr" placeholder="المنطقة، الشارع، رقم العمارة والشقة"><div class="err" id="eAddr">اكتب العنوان</div>
+   <label>طريقة الدفع</label>
+   <div class="pay">
+    <label class="opt"><input type="radio" name="pay" value="كاش عند الاستلام" checked><span>💵 كاش عند الاستلام</span></label>
+    <label class="opt"><input type="radio" name="pay" value="فودافون كاش"><span>📱 فودافون كاش</span></label>
+   </div>
+   <button class="cta" onclick="placeOrder()">أكّد الطلب</button>
+  </div>`;
+ }
+ else if(state.view==='confirm'){
+  const o=state.arg;
+  app.innerHTML=`
+  <div class="panel confirm">
+   <div class="check">✓</div>
+   <h2>طلبك اتسجّل يا ${esc(o.name.split(' ')[0])}! 🎉</h2>
+   <p style="color:#666">رقم الطلب:</p>
+   <div class="num">${o.id}</div>
+   <p style="color:#666;margin-top:8px">الإجمالي: <b>${o.total} ج</b> (${esc(o.payment)})</p>
+   <p style="color:#666;margin-top:4px">⏱ التوصيل خلال 45-60 دقيقة إن شاء الله</p>
+   <p style="font-size:.8rem;color:#b45309;margin-top:12px">دي نسخة تجريبية — مفيش طلب حقيقي اتبعت لأي محل.</p>
+   <button class="cta" onclick="go('home')">ارجع للرئيسية</button>
+  </div>`;
+ }
+}
+function placeOrder(){
+ const n=document.getElementById('fName').value.trim(),
+       ph=document.getElementById('fPhone').value.trim(),
+       a=document.getElementById('fAddr').value.trim();
+ let ok=true;
+ const chk=(cond,id)=>{document.getElementById(id).classList.toggle('show',!cond);if(!cond)ok=false};
+ chk(n.length>=2,'eName');chk(/^01[0-9]{9}$/.test(ph.replace(/\s/g,'')),'ePhone');chk(a.length>=5,'eAddr');
+ if(!ok)return;
+ const c=getCart();let sub=0;
+ const items=c.map(i=>{const p=findProd(i.id);sub+=p.price*i.qty;return{name:p.name,price:p.price,qty:i.qty,store:p.storeName}});
+ const pay=document.querySelector('input[name=pay]:checked').value;
+ const order={id:'AX-'+Math.floor(1000+Math.random()*9000),name:n,phone:ph,address:a,payment:pay,
+  items,subtotal:sub,fee:fee(),total:sub+fee(),status:'جديد',createdAt:new Date().toISOString()};
+ const orders=JSON.parse(localStorage.getItem(K_ORDERS)||'[]');orders.unshift(order);
+ localStorage.setItem(K_ORDERS,JSON.stringify(orders));
+ setCart([]);go('confirm',order);
+}
+render();
+</script>
+</body>
+</html>
+
