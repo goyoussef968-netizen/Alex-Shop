@@ -3,151 +3,424 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تابع طلبك | أليكس شوب</title>
+<title>Alex Shop | أليكس شوب - توصيل أكل وبقالة في العجمي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=El+Messiri:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',system-ui,sans-serif}
-body{background:#f6f7f6;color:#1a1a1a;padding-bottom:80px}
-header{background:#16a34a;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-header .wrap{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:1.4rem;font-weight:800;cursor:pointer}
-.logo small{font-size:.7rem;font-weight:400;display:block;opacity:.9}
-.hbtn{background:#fff;color:#16a34a;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.95rem;cursor:pointer}
-main{max-width:720px;margin:0 auto;padding:16px}
-.panel{background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px}
-label{display:block;font-weight:700;font-size:.88rem;margin:12px 0 4px}
-input{width:100%;padding:11px 12px;border:1.5px solid #d1d5db;border-radius:10px;font-size:1rem;background:#fff}
-input:focus{outline:none;border-color:#16a34a}
-.cta{display:block;width:100%;background:#16a34a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1.05rem;font-weight:800;cursor:pointer;margin-top:14px}
-.cta:disabled{background:#9ca3af;cursor:not-allowed}
-.err{color:#dc2626;font-size:.85rem;margin-top:10px;display:none;text-align:center}
+:root{--bg:#0e0f12;--card:#17191e;--card2:#101114;--text:#f2ede3;--muted:#96907f;--gold:#d4af37;--gold2:#f5d67b;--golddk:#1a1505;--border:rgba(212,175,55,.18);--border2:rgba(212,175,55,.4);--inputbg:#101114;--green:#25d366;--red:#f87171}
+body.light{--bg:#f6f3ec;--card:#ffffff;--card2:#fdfbf6;--text:#23211a;--muted:#7d7869;--gold:#a8842a;--gold2:#8f6f1f;--golddk:#fdf6e0;--border:rgba(150,120,40,.25);--border2:rgba(150,120,40,.45);--inputbg:#ffffff;--green:#1fa855;--red:#dc2626}
+body{background:var(--bg);color:var(--text)}
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+header .wrap{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.logo{font-family:'El Messiri',serif;font-weight:700;font-size:1.25rem;background:linear-gradient(135deg,var(--gold2),var(--gold) 55%,#b8860b);-webkit-background-clip:text;background-clip:text;color:transparent;cursor:pointer}
+.logo small{display:block;font-family:'Cairo';font-size:.62rem;font-weight:400;color:var(--muted);-webkit-text-fill-color:var(--muted)}
+.hbtns{display:flex;gap:8px}
+#trackBtn{background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer}
+#cartBtn{background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--golddk);border:none;border-radius:999px;padding:6px 14px;font-weight:800;font-size:.88rem;cursor:pointer;position:relative}
+#cartCount{position:absolute;top:-6px;left:-6px;background:var(--bg);border:1px solid var(--gold);color:var(--gold2);border-radius:50%;width:20px;height:20px;font-size:.72rem;display:flex;align-items:center;justify-content:center;font-weight:800}
+main{max-width:720px;margin:0 auto;padding:16px 16px 110px}
+.hero{position:relative;margin:4px 0 8px;padding:32px 22px 28px;border-radius:22px;overflow:hidden;background:radial-gradient(120% 140% at 85% 0%,rgba(212,175,55,.14),transparent 55%),linear-gradient(160deg,var(--card),var(--card2) 70%);border:1px solid var(--border);text-align:center}
+.hero::before{content:"✦";position:absolute;top:14px;left:20px;color:var(--gold);opacity:.5;font-size:.9rem}
+.hero::after{content:"✦";position:absolute;bottom:14px;right:20px;color:var(--gold);opacity:.5;font-size:.9rem}
+.hero .kicker{font-size:.72rem;letter-spacing:3px;color:var(--gold);font-weight:700;margin-bottom:10px}
+.hero h1{font-family:'El Messiri',serif;font-size:1.75rem;font-weight:700;line-height:1.55;background:linear-gradient(135deg,var(--text),var(--gold2) 60%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:.88rem;margin-top:10px;line-height:1.9}
+.hero .orn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;color:var(--gold);font-size:.7rem}
+.hero .orn::before,.hero .orn::after{content:"";height:1px;width:52px;background:linear-gradient(90deg,transparent,var(--border2),transparent)}
+.sec{display:flex;align-items:center;gap:12px;margin:24px 2px 12px}
+.sec h2{font-family:'El Messiri',serif;font-size:1.15rem;font-weight:600;white-space:nowrap}
+.sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--border2),transparent)}
+.store{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;gap:14px;align-items:center;transition:transform .15s}
+.store:active{transform:scale(.985)}
+.store .icon{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 30% 25%,rgba(212,175,55,.15),transparent);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.55rem;flex-shrink:0}
+.store h3{font-family:'El Messiri',serif;font-size:1.08rem;font-weight:600}
+.store .meta{font-size:.76rem;color:var(--muted);margin-top:3px}
+.badge{display:inline-block;font-size:.68rem;color:var(--gold2);border:1px solid var(--border2);border-radius:999px;padding:3px 10px;font-weight:700;margin-inline-end:5px;margin-top:5px}
+body.light .badge{color:var(--gold)}
+.back{display:inline-block;background:none;border:1px solid var(--border2);border-radius:999px;color:var(--gold2);font-weight:700;font-size:.82rem;cursor:pointer;margin-bottom:12px;padding:7px 16px}
+body.light .back{color:var(--gold)}
+.panel{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:12px}
+.panel h2{font-family:'El Messiri',serif;font-size:1.2rem}
+.panel .sub{font-size:.82rem;color:var(--muted);margin-top:5px}
+.prod{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.prod .info{flex:1}
+.prod .name{font-weight:700;font-size:.95rem}
+.prod .unit{font-size:.74rem;color:var(--muted);margin-top:2px}
+.prod .price{font-family:'El Messiri',serif;color:var(--gold2);font-weight:700;font-size:1rem;margin-top:5px}
+body.light .prod .price{color:var(--gold)}
+.addbtn{background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--golddk);border:none;border-radius:999px;padding:8px 22px;font-weight:800;cursor:pointer;font-size:.85rem;box-shadow:0 4px 14px rgba(212,175,55,.2)}
+.stepper{display:flex;align-items:center;gap:12px;border:1px solid var(--border2);border-radius:999px;padding:4px 10px}
+.stepper button{width:26px;height:26px;background:none;border:none;color:var(--gold2);font-size:1.15rem;font-weight:800;cursor:pointer}
+body.light .stepper button{color:var(--gold)}
+.stepper .q{font-weight:800;min-width:16px;text-align:center;color:var(--gold2)}
+body.light .stepper .q{color:var(--gold)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.row .nm{flex:1}
+.totalrow{display:flex;justify-content:space-between;padding:6px 0;font-size:.95rem}
+.totalrow.grand{font-weight:800;font-size:1.1rem;border-top:1px solid var(--border2);margin-top:6px;padding-top:10px;font-family:'El Messiri',serif}
+.cta{display:block;width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--golddk);border:none;border-radius:999px;padding:14px;font-size:1.02rem;font-weight:800;cursor:pointer;margin-top:14px;box-shadow:0 6px 20px rgba(212,175,55,.22)}
+.cta:disabled{background:#6b7280;color:#e5e7eb;cursor:not-allowed;box-shadow:none}
+.cta.ghost{background:transparent;color:var(--text);border:1px solid var(--border2);box-shadow:none}
+label{display:block;font-weight:700;font-size:.86rem;margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border:1.5px solid var(--border2);border-radius:12px;font-size:1rem;background:var(--inputbg);color:var(--text)}
+input:focus{outline:none;border-color:var(--gold)}
+input::placeholder{color:var(--muted);opacity:.7}
+.err{color:var(--red);font-size:.8rem;margin-top:4px;display:none}
 .err.show{display:block}
-.steps{display:flex;justify-content:space-between;margin:18px 0 6px;position:relative}
-.steps::before{content:'';position:absolute;top:17px;right:12%;left:12%;height:4px;background:#e5e7eb;border-radius:2px}
-.step{flex:1;text-align:center;position:relative;z-index:1}
-.step .dot{width:34px;height:34px;border-radius:50%;background:#e5e7eb;color:#9ca3af;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:1rem;font-weight:800}
-.step.done .dot{background:#16a34a;color:#fff}
-.step p{font-size:.72rem;font-weight:700;color:#9ca3af}
-.step.done p{color:#15803d}
-.cancelled{background:#fef2f2;border:1.5px solid #fca5a5;color:#b91c1c;border-radius:12px;padding:14px;text-align:center;font-weight:800;margin:14px 0}
-.onum{background:#e8f7ee;color:#15803d;font-weight:800;border-radius:10px;padding:8px 18px;display:inline-block;font-size:1.1rem}
-.items{font-size:.85rem;margin-top:10px;background:#f9fafb;border-radius:8px;padding:8px 10px}
-.tot{font-weight:800;margin-top:8px}
-.meta{font-size:.8rem;color:#666;margin-top:4px}
-.driver{background:#eff6ff;border:1.5px solid #93c5fd;color:#1e3a8a;border-radius:12px;padding:12px 14px;margin:14px 0;text-align:center;font-size:.95rem}
-.dbtns{display:flex;gap:8px;margin-top:10px;justify-content:center}
-.dbtn{background:#16a34a;color:#fff;border-radius:10px;padding:8px 18px;font-weight:700;font-size:.88rem;text-decoration:none}
-.dbtn.wa{background:#25d366}
-.fab{position:fixed;bottom:18px;left:18px;width:54px;height:54px;border-radius:50%;background:#25d366;color:#fff;font-size:1.6rem;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.25);text-decoration:none;z-index:20}
-footer{max-width:720px;margin:20px auto 0;padding:0 16px;text-align:center;color:#999;font-size:.75rem}
+.pay{display:flex;gap:10px;margin-top:6px}
+.pay label.opt{flex:1;border:1.5px solid var(--border2);border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-weight:700;font-size:.85rem;margin:0}
+.pay input{display:none}
+.pay input:checked+span{color:var(--gold2)}
+body.light .pay input:checked+span{color:var(--gold)}
+.pay label.opt:has(input:checked){border-color:var(--gold);background:rgba(212,175,55,.1)}
+.confirm{text-align:center;padding:26px 10px}
+.confirm .check{width:74px;height:74px;border-radius:50%;background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--golddk);font-size:2.2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 26px rgba(212,175,55,.3)}
+.confirm h2{font-family:'El Messiri',serif;margin-bottom:8px}
+.confirm .num{background:rgba(212,175,55,.12);color:var(--gold2);border:1px solid var(--border2);font-weight:800;border-radius:12px;padding:8px 20px;display:inline-block;margin:10px 0;font-size:1.1rem}
+body.light .confirm .num{color:var(--gold)}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+.disc{display:flex;gap:8px;margin-top:12px}
+.disc input{flex:1}
+.disc .addbtn{white-space:nowrap}
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:30;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--border)}
+.tabbar .wrap{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 12px;color:var(--muted);font-size:.68rem;font-weight:700;cursor:pointer;border:none;background:none;font-family:'Cairo'}
+.tab .ic{font-size:1.25rem}
+.tab.on{color:var(--gold)}
+.ptop{display:flex;align-items:center;gap:14px;margin:8px 0 4px}
+.avatar{width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 30% 25%,rgba(212,175,55,.25),transparent);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'El Messiri',serif;font-size:1.5rem;color:var(--gold);flex-shrink:0}
+.ptop .nm{font-family:'El Messiri',serif;font-size:1.2rem;font-weight:700}
+.ptop .ph{font-size:.8rem;color:var(--muted);margin-top:2px}
+.tier{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:.72rem;font-weight:800;color:var(--golddk);background:linear-gradient(135deg,var(--gold2),var(--gold));border-radius:999px;padding:4px 12px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0 4px}
+.stat{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:16px;padding:14px 8px;text-align:center}
+.stat .v{font-family:'El Messiri',serif;font-size:1.15rem;font-weight:700;color:var(--gold2)}
+body.light .stat .v{color:var(--gold)}
+.stat .k{font-size:.68rem;color:var(--muted);margin-top:4px;font-weight:700}
+.ordrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid var(--border);cursor:pointer}
+.ordrow:last-child{border-bottom:none}
+.ordrow .t{font-weight:700;font-size:.9rem}
+.ordrow .d{font-size:.73rem;color:var(--muted);margin-top:3px}
+.ordrow .amt{font-family:'El Messiri',serif;color:var(--gold2);font-weight:700;white-space:nowrap}
+body.light .ordrow .amt{color:var(--gold)}
+.bigbtn{display:flex;align-items:center;gap:14px;width:100%;text-align:right;background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;cursor:pointer;color:var(--text);font-family:'Cairo';text-decoration:none}
+.bigbtn .ic{width:50px;height:50px;border-radius:50%;border:1px solid var(--border2);background:radial-gradient(circle at 30% 25%,rgba(212,175,55,.18),transparent);display:flex;align-items:center;justify-content:center;font-size:1.35rem;flex-shrink:0}
+.bigbtn .t{font-weight:800;font-size:.95rem}
+.bigbtn .d{font-size:.75rem;color:var(--muted);margin-top:3px}
+.gbtn{background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--golddk);border:none;border-radius:999px;padding:8px 20px;font-weight:800;font-size:.82rem;cursor:pointer}
+.ghostbtn{background:none;border:1px solid var(--border2);color:var(--text);border-radius:999px;padding:8px 18px;font-weight:700;font-size:.8rem;cursor:pointer;font-family:'Cairo'}
+.notecard{font-size:.72rem;color:var(--muted);text-align:center;margin-top:14px;line-height:1.8}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 2px;border-bottom:1px solid var(--border)}
+.setrow:last-child{border-bottom:none}
+.setrow .t{font-weight:700;font-size:.92rem}
+.setrow .d{font-size:.74rem;color:var(--muted);margin-top:3px}
 </style>
 </head>
 <body>
 <header><div class="wrap">
-<div class="logo" onclick="location.href='index.html'">🛒 أليكس شوب<small>توصيل من محلات العجمي لباب بيتك</small></div>
-<button class="hbtn" onclick="location.href='index.html'">المحلات</button>
+<div class="logo" onclick="go('home')">أليكس شوب<small>توصيل من محلات العجمي لباب بيتك</small></div>
+<div class="hbtns"><button id="trackBtn" onclick="location.href='track.html'">📦 تابع طلبك</button><button id="cartBtn" onclick="go('cart')">السلة <span id="cartCount">0</span></button></div>
 </div></header>
-<main>
-<div class="panel">
- <h2 style="text-align:center">📦 تابع حالة طلبك</h2>
- <label>رقم الطلب</label>
- <input id="fOrder" inputmode="numeric" placeholder="مثال: 12" dir="ltr" style="text-align:center">
- <label>رقم الموبايل اللي طلبت بيه</label>
- <input id="fPhone" inputmode="tel" placeholder="01xxxxxxxxx" dir="ltr" style="text-align:center">
- <button class="cta" id="trackBtn" onclick="track()">شوف الحالة</button>
- <div class="err" id="errMsg">رقم الطلب أو الموبايل غلط. اتأكد منهم وجرب تاني.</div>
-</div>
-<div id="result"></div>
-</main>
-<footer>Alex Shop — أليكس شوب، توصيل من محلات العجمي لباب بيتك.</footer>
+<main id="app"></main>
+<div class="tabbar"><div class="wrap">
+ <button class="tab" data-v="profile" onclick="go('profile')"><span class="ic">👤</span>الملف</button>
+ <button class="tab" data-v="support" onclick="go('support')"><span class="ic">💬</span>الدعم</button>
+ <button class="tab" data-v="order" onclick="go('home')"><span class="ic">🛍</span>اطلب</button>
+ <button class="tab" data-v="settings" onclick="go('settings')"><span class="ic">⚙️</span>الإعدادات</button>
+</div></div>
 <script>
 // ================== إعدادات قاعدة البيانات ==================
 const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
 const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
-// رقم واتساب الدعم بالكود الدولي من غير + ومن غير أصفار الأول — مثال: 201012345678
-// لو سيبته فاضي زرار الدعم مش هيظهر
+// رقم واتساب الدعم بالكود الدولي من غير + ومن غير أصفار الأول
 const SUPPORT_WA='201202255463';
 // ============================================================
-const STEPS=['جديد','مقبول','خرج للتوصيل','اتسلّم'];
-const ICONS=['📝','✅','🛵','🎉'];
-function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
-function orderNum(v){v=String(v).trim().toUpperCase().replace(/^AX[-\s]?/,'').replace(/\D/g,'');return v?parseInt(v,10):null}
-function waNum(p){let d=String(p).replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
-async function track(){
- const id=orderNum(document.getElementById('fOrder').value);
- const ph=document.getElementById('fPhone').value.trim();
- const err=document.getElementById('errMsg');err.classList.remove('show');
- document.getElementById('result').innerHTML='';
- if(!id||ph.replace(/\D/g,'').length<10){err.classList.add('show');return}
- const btn=document.getElementById('trackBtn');btn.disabled=true;btn.textContent='بنبحث...';
+const K_CART='alexshop_cart_v1';
+const K_DISC='alexshop_discount';
+const K_ORDERS='alexshop_orders';
+const K_THEME='alexshop_theme';
+const K_AREA='alexshop_area';
+const DEFAULT_STORES=[
+ {id:'s1',name:'سوبر ماركت النور',cat:'بقالة وسوبر ماركت',icon:'🏪',time:'30-45 دقيقة',min:50,products:[
+  {id:'p1',name:'أرز مصري فاخر',unit:'كيلو',price:38},{id:'p2',name:'سكر',unit:'كيلو',price:32},
+  {id:'p3',name:'زيت عباد الشمس',unit:'700 مل',price:75},{id:'p4',name:'مكرونة',unit:'400 جم',price:14},
+  {id:'p5',name:'شاي ليبتون',unit:'100 فتلة',price:85},{id:'p6',name:'جبنة رومي',unit:'كيلو',price:280}]},
+ {id:'s2',name:'خضار وفاكهة الحاج سيد',cat:'خضار وفاكهة',icon:'🥬',time:'25-40 دقيقة',min:30,products:[
+  {id:'p1',name:'طماطم',unit:'كيلو',price:18},{id:'p2',name:'بطاطس',unit:'كيلو',price:16},
+  {id:'p3',name:'بصل',unit:'كيلو',price:20},{id:'p4',name:'موز',unit:'كيلو',price:35},
+  {id:'p5',name:'برتقال',unit:'كيلو',price:22},{id:'p6',name:'خيار',unit:'كيلو',price:20}]},
+ {id:'s3',name:'مخبز العائلة',cat:'مخبوزات',icon:'🥐',time:'20-30 دقيقة',min:20,products:[
+  {id:'p1',name:'عيش بلدي',unit:'5 أرغفة',price:15},{id:'p2',name:'عيش فينو',unit:'5 أرغفة',price:20},
+  {id:'p3',name:'كرواسون بالشوكولاتة',unit:'قطعة',price:18},{id:'p4',name:'باتيه باللحمة',unit:'قطعة',price:22},
+  {id:'p5',name:'قطر الشام',unit:'كيلو',price:90}]},
+ {id:'s4',name:'بن البرازيلي',cat:'قهوة ومحمصة',icon:'☕',time:'35-50 دقيقة',min:40,products:[
+  {id:'p1',name:'بن تركي سادة',unit:'ربع كيلو',price:95},{id:'p2',name:'بن فرنساوي',unit:'ربع كيلو',price:105},
+  {id:'p3',name:'مكسرات مشكلة',unit:'ربع كيلو',price:120},{id:'p4',name:'لب سوري',unit:'ربع كيلو',price:65}]}
+];
+let STORES=DEFAULT_STORES;
+async function loadStores(){
  try{
-  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_order_status',{method:'POST',
-   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
-   body:JSON.stringify({p_id:id,p_phone:ph})});
+  const r=await fetch(SUPABASE_URL+'/rest/v1/stores?select=*&order=name',{headers:{apikey:SUPABASE_KEY}});
   if(!r.ok)throw 0;
-  const o=await r.json();
-  if(!o){err.classList.add('show');return}
-  try{localStorage.setItem('alexshop_last_order',String(o.id));localStorage.setItem('alexshop_phone',ph)}catch(e){}
-  renderOrder(o);
- }catch(e){
-  err.textContent='حصلت مشكلة في الاتصال. اتأكد من الإنترنت وجرب تاني.';
-  err.classList.add('show');
- }
- btn.disabled=false;btn.textContent='شوف الحالة';
+  const d=await r.json();
+  if(d.length)STORES=d.map(x=>({id:x.id,name:x.name,cat:x.cat,icon:x.icon,time:x.delivery_time,min:x.min_order,products:x.products||[]}));
+ }catch(e){/* لو مفيش نت نعرض البيانات الافتراضية */}
+ render();
 }
-function renderOrder(o){
- const isCancelled=(o.status==='ملغي');
- const idx=STEPS.indexOf(o.status);
- let html='<div class="panel" style="text-align:center">';
- html+='<p style="color:#666">رقم الطلب:</p><div class="onum">AX-'+o.id+'</div>';
- html+='<div class="meta">🕐 '+new Date(o.created_at).toLocaleString('ar-EG')+'</div>';
- if(isCancelled){
-  html+='<div class="cancelled">❌ الطلب ده اتلغى. لو عندك استفسار كلمنا.</div>';
- }else{
-  html+='<div class="steps">'+STEPS.map((s,i)=>
-   '<div class="step '+(i<=idx?'done':'')+'"><div class="dot">'+(i<idx?'✓':ICONS[i])+'</div><p>'+s+'</p></div>'
-  ).join('')+'</div>';
-  if(idx===0)html+='<div class="meta" style="margin-top:8px">طلبك اتسجّل وبنراجعه 👍</div>';
-  else if(idx===1)html+='<div class="meta" style="margin-top:8px">طلبك اتقبل وبنجهزه 👨‍🍳</div>';
-  else if(idx===2)html+='<div class="meta" style="margin-top:8px">الطلب خرج للتوصيل، في الطريق ليك 🛵</div>';
-  else if(idx===3)html+='<div class="meta" style="margin-top:8px">اتسلّم! بالهنا والشفا 🎉</div>';
+function getStores(){return STORES}
+function getCart(){try{return JSON.parse(localStorage.getItem(K_CART))||[]}catch(e){return[]}}
+function setCart(c){localStorage.setItem(K_CART,JSON.stringify(c));updateCount()}
+function updateCount(){document.getElementById('cartCount').textContent=getCart().reduce((a,i)=>a+i.qty,0)}
+function findProd(pid){for(const s of getStores())for(const p of s.products)if(s.id+'/'+p.id===pid)return{...p,storeId:s.id,storeName:s.name};return null}
+function addToCart(pid){const c=getCart();const f=c.find(i=>i.id===pid);if(f)f.qty++;else c.push({id:pid,qty:1});setCart(c);render()}
+function decCart(pid){let c=getCart();const f=c.find(i=>i.id===pid);if(!f)return;f.qty--;if(f.qty<=0)c=c.filter(i=>i.id!==pid);setCart(c);render()}
+function cartQty(pid){const f=getCart().find(i=>i.id===pid);return f?f.qty:0}
+function fee(){return 20}
+function getDisc(){try{return JSON.parse(localStorage.getItem(K_DISC))||null}catch(e){return null}}
+function setDisc(d){try{if(d)localStorage.setItem(K_DISC,JSON.stringify(d));else localStorage.removeItem(K_DISC)}catch(e){}}
+function discAmount(sub){const d=getDisc();if(!d||sub<=0)return 0;return Math.min(d.value,sub+fee())}
+// ===== المظهر (داكن/فاتح) — محفوظ على الجهاز =====
+function getTheme(){try{return localStorage.getItem(K_THEME)||'dark'}catch(e){return 'dark'}}
+function applyTheme(){document.body.classList.toggle('light',getTheme()==='light')}
+function setTheme(t){try{localStorage.setItem(K_THEME,t)}catch(e){}applyTheme();render()}
+applyTheme();
+// ===== سجل الطلبات المحلي (على جهاز العميل بس — مش على السيرفر) =====
+function getOrders(){try{return JSON.parse(localStorage.getItem(K_ORDERS))||[]}catch(e){return[]}}
+function saveOrderRec(rec){try{const a=getOrders();a.unshift(rec);localStorage.setItem(K_ORDERS,JSON.stringify(a.slice(0,50)))}catch(e){}}
+function tierOf(n){return n>=15?'💎 عميل بلاتيني':n>=5?'🥇 عميل ذهبي':n>=3?'🥈 عميل فضي':'🌱 عميل جديد'}
+function getArea(){try{return localStorage.getItem(K_AREA)||''}catch(e){return ''}}
+function saveArea(){const v=document.getElementById('fArea').value.trim();try{if(v)localStorage.setItem(K_AREA,v);else localStorage.removeItem(K_AREA)}catch(e){}render()}
+function go(v,arg){state={view:v,arg};window.scrollTo(0,0);render()}
+let state={view:'home'};
+const app=document.getElementById('app');
+function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function markTab(){
+ let v=state.view;
+ let t=(v==='profile'||v==='support'||v==='settings')?v:'order';
+ document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.v===t));
+}
+function render(){
+ updateCount();
+ markTab();
+ if(state.view==='home'){
+  const stores=getStores();
+  app.innerHTML=`
+  <div class="hero">
+   <div class="kicker">ALEX SHOP · العجمي</div>
+   <h1>كل اللي تحتاجه من محلات منطقتك<br>يوصلك لباب البيت</h1>
+   <p>تشكيلة مختارة من أجود المحلات — أكل، بقالة، وحاجات البيت كلها.<br>اطلب في دقيقة، والتوصيل علينا.</p>
+   <div class="orn">تجربة تسوّق تليق بيك</div>
+  </div>
+  <div class="sec"><h2>المحلات</h2></div>
+  ${stores.map(s=>`<div class="store" onclick="go('store','${s.id}')">
+   <div class="icon">${s.icon||'🏪'}</div>
+   <div><h3>${esc(s.name)}</h3><div class="meta">${esc(s.cat)}</div>
+   <div class="meta"><span class="badge">⏱ ${esc(s.time)}</span><span class="badge">حد أدنى ${s.min} ج</span></div></div>
+  </div>`).join('')||'<div class="empty">مفيش محلات لسه</div>'}`;
  }
- if(!isCancelled&&(o.driver_name||o.driver_phone)){
-  html+='<div class="driver">🛵 المندوب اللي جايلك: <b>'+esc(o.driver_name||'')+'</b>';
-  if(o.driver_phone){
-   html+='<div class="dbtns"><a class="dbtn" href="tel:'+esc(o.driver_phone)+'">📞 اتصل بالمندوب</a>'
-        +'<a class="dbtn wa" target="_blank" href="https://wa.me/'+waNum(o.driver_phone)+'">💬 واتساب</a></div>';
+ else if(state.view==='store'){
+  const s=getStores().find(x=>x.id===state.arg);if(!s)return go('home');
+  app.innerHTML=`
+  <button class="back" onclick="go('home')">→ رجوع للمحلات</button>
+  <div class="panel"><h2>${s.icon||'🏪'} ${esc(s.name)}</h2>
+  <div class="sub">${esc(s.cat)} · ⏱ ${esc(s.time)} · حد أدنى ${s.min} ج</div></div>
+  ${s.products.map(p=>{const pid=s.id+'/'+p.id,q=cartQty(pid);return `<div class="prod">
+   <div class="info"><div class="name">${esc(p.name)}</div><div class="unit">${esc(p.unit)}</div><div class="price">${p.price} ج</div></div>
+   ${q===0?`<button class="addbtn" onclick="addToCart('${pid}')">ضيف</button>`
+    :`<div class="stepper"><button onclick="addToCart('${pid}')">+</button><span class="q">${q}</span><button onclick="decCart('${pid}')">−</button></div>`}
+  </div>`}).join('')}`;
+ }
+ else if(state.view==='cart'){
+  const c=getCart();let sub=0;
+  const rows=c.map(i=>{const p=findProd(i.id);if(!p)return'';sub+=p.price*i.qty;
+   return `<div class="row"><span class="nm">${esc(p.name)} <small style="color:var(--muted)">(${esc(p.storeName)})</small></span>
+   <div class="stepper"><button onclick="addToCart('${i.id}')">+</button><span class="q">${i.qty}</span><button onclick="decCart('${i.id}')">−</button></div>
+   <b style="min-width:60px;text-align:left">${p.price*i.qty} ج</b></div>`}).join('');
+  const d=getDisc();
+  const disc=c.length?discAmount(sub):0;
+  const tot=Math.max(0,sub+(c.length?fee():0)-disc);
+  app.innerHTML=`
+  <button class="back" onclick="go('home')">→ كمّل تسوّق</button>
+  <div class="panel"><h2>🧺 السلة</h2>
+  ${c.length?rows+`
+   <div class="disc">
+    <input id="fDisc" dir="ltr" style="text-align:center" placeholder="كود الخصم" value="${d?esc(d.code):''}">
+    <button class="addbtn" id="discBtn" onclick="applyDiscount()">طبّق</button>
+   </div>
+   <div class="err" id="discMsg"></div>
+   <div class="totalrow" style="margin-top:10px"><span>المجموع</span><span>${sub} ج</span></div>
+   <div class="totalrow"><span>رسوم التوصيل</span><span>${fee()} ج</span></div>
+   ${disc>0?`<div class="totalrow" style="color:var(--gold2);font-weight:700"><span>خصم (${esc(d.code)}) <a onclick="rmDisc()" style="color:var(--red);cursor:pointer">✕</a></span><span>−${disc} ج</span></div>`:''}
+   <div class="totalrow grand"><span>الإجمالي</span><span>${tot} ج</span></div>
+   <button class="cta" onclick="go('checkout')">كمّل الطلب</button>`
+  :'<div class="empty">السلة فاضية 🛒<br><br><button class="addbtn" onclick="go(\'home\')">اتفرج على المحلات</button></div>'}
+  </div>`;
+ }
+ else if(state.view==='checkout'){
+  const savedName=(()=>{try{return localStorage.getItem('alexshop_name')||''}catch(e){return ''}})();
+  const savedPhone=(()=>{try{return localStorage.getItem('alexshop_phone')||''}catch(e){return ''}})();
+  const savedArea=getArea();
+  app.innerHTML=`
+  <button class="back" onclick="go('cart')">→ رجوع للسلة</button>
+  <div class="panel"><h2>📦 بيانات التوصيل</h2>
+   <label>الاسم</label><input id="fName" placeholder="اسمك الكامل" value="${esc(savedName)}"><div class="err" id="eName">اكتب اسمك</div>
+   <label>رقم الموبايل</label><input id="fPhone" inputmode="tel" placeholder="01xxxxxxxxx" value="${esc(savedPhone)}"><div class="err" id="ePhone">اكتب رقم موبايل صحيح (11 رقم يبدأ بـ 01)</div>
+   <label>العنوان بالتفصيل</label><input id="fAddr" placeholder="المنطقة، الشارع، رقم العمارة والشقة" value="${esc(savedArea)}"><div class="err" id="eAddr">اكتب العنوان</div>
+   <label>طريقة الدفع</label>
+   <div class="pay">
+    <label class="opt"><input type="radio" name="pay" value="كاش عند الاستلام" checked><span>💵 كاش عند الاستلام</span></label>
+    <label class="opt"><input type="radio" name="pay" value="فودافون كاش"><span>📱 فودافون كاش</span></label>
+   </div>
+   <button class="cta" id="orderBtn" onclick="placeOrder()">أكّد الطلب</button>
+  </div>`;
+ }
+ else if(state.view==='confirm'){
+  const o=state.arg;
+  app.innerHTML=`
+  <div class="panel confirm">
+   <div class="check">✓</div>
+   <h2>طلبك اتسجّل يا ${esc(o.name.split(' ')[0])}! 🎉</h2>
+   <p style="color:var(--muted)">رقم الطلب:</p>
+   <div class="num">${o.id}</div>
+   ${o.discount>0?`<p style="color:var(--gold2);margin-top:8px;font-weight:700">🎟 اتحسب ليك خصم −${o.discount} ج</p>`:''}
+   <p style="color:var(--muted);margin-top:8px">الإجمالي: <b style="color:var(--text)">${o.total} ج</b> (${esc(o.payment)})</p>
+   <p style="color:var(--muted);margin-top:4px">⏱ التوصيل خلال 45-60 دقيقة إن شاء الله</p>
+   <p style="font-size:.8rem;color:var(--muted);margin-top:12px">هنتواصل معاك على رقمك لتأكيد الطلب.</p>
+   <button class="cta" onclick="location.href='track.html?o=${o.id}'">📦 تابع حالة طلبك</button>
+   <button class="cta ghost" onclick="go('home')">ارجع للرئيسية</button>
+  </div>`;
+ }
+ else if(state.view==='profile'){
+  const orders=getOrders();
+  const name=(()=>{try{return localStorage.getItem('alexshop_name')||''}catch(e){return ''}})();
+  const phone=(()=>{try{return localStorage.getItem('alexshop_phone')||''}catch(e){return ''}})();
+  const total=orders.reduce((a,o)=>a+(o.total||0),0);
+  const since=orders.length?new Date(orders[orders.length-1].ts).toLocaleDateString('ar-EG',{month:'long',year:'numeric'}):'—';
+  const initial=name?name.trim()[0]:'👤';
+  app.innerHTML=`
+  <div class="ptop">
+   <div class="avatar">${esc(initial)}</div>
+   <div><div class="nm">${name?esc(name):'ضيفنا العزيز'}</div><div class="ph" dir="ltr">${phone?esc(phone):'—'}</div>
+    <span class="tier">${tierOf(orders.length)}</span></div>
+  </div>
+  <div class="stats">
+   <div class="stat"><div class="v">${orders.length}</div><div class="k">طلبات</div></div>
+   <div class="stat"><div class="v">${total} ج</div><div class="k">إجمالي مشترياتك</div></div>
+   <div class="stat"><div class="v">${since}</div><div class="k">عميل منذ</div></div>
+  </div>
+  <div class="sec"><h2>آخر طلباتك</h2></div>
+  ${orders.length?`<div class="panel">
+   ${orders.slice(0,5).map(o=>`<div class="ordrow" onclick="location.href='track.html?o=${encodeURIComponent(o.id)}'">
+    <div><div class="t">${esc(o.id)} · ${esc((o.stores||[]).join('، ')||'أليكس شوب')}</div>
+    <div class="d">${new Date(o.ts).toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'})} · ${o.items||0} منتجات</div></div>
+    <span class="amt">${o.total} ج</span></div>`).join('')}
+  </div>
+  <div class="notecard">دوس على أي طلب عشان تتابع حالته.<br>طلباتك وبياناتك محفوظة على جهازك ده بس — مفيش حد يقدر يشوفها برقمك.</div>`
+  :`<div class="empty">لسه مفيش طلبات من الجهاز ده 🌱<br><br><button class="addbtn" onclick="go('home')">ابدأ أول طلب</button></div>
+  <div class="notecard">أول ما تطلب، طلباتك هتتحفظ هنا على جهازك بس — مش على السيرفر.</div>`}`;
+ }
+ else if(state.view==='support'){
+  const waNum=SUPPORT_WA;
+  const telLocal=waNum.startsWith('20')?'0'+waNum.slice(2):waNum;
+  app.innerHTML=`
+  <div class="hero">
+   <div class="kicker">الدعم الفني</div>
+   <h1>محتاج مساعدة؟<br>إحنا معاك</h1>
+   <p>كلمنا على واتساب أو اتصل بينا — فريق أليكس شوب بيرد بسرعة.</p>
+  </div>
+  ${waNum?`<a class="bigbtn" target="_blank" href="https://wa.me/${waNum}?text=${encodeURIComponent('السلام عليكم 👋 عندي استفسار عن أليكس شوب')}"><span class="ic">💬</span><span><div class="t">واتساب الدعم</div><div class="d">أسرع رد — ابعت رسالتك وهنرد عليك</div></span></a>
+  <a class="bigbtn" href="tel:${telLocal}"><span class="ic">📞</span><span><div class="t">اتصال مباشر</div><div class="d" dir="ltr">${telLocal}</div></span></a>`:''}
+  <a class="bigbtn" href="track.html"><span class="ic">📦</span><span><div class="t">مشكلة في طلب؟</div><div class="d">تابع حالة طلبك الأول من صفحة المتابعة</div></span></a>
+  `;
+ }
+ else if(state.view==='settings'){
+  const theme=getTheme(), area=getArea();
+  app.innerHTML=`
+  <div class="sec" style="margin-top:8px"><h2>الإعدادات</h2></div>
+  <div class="panel">
+   <div class="setrow"><div><div class="t">🌙 مظهر الموقع</div><div class="d">داكن أو فاتح — على ذوقك</div></div>
+    <div style="display:flex;gap:6px">
+     <button class="${theme==='dark'?'gbtn':'ghostbtn'}" onclick="setTheme('dark')">داكن</button>
+     <button class="${theme==='light'?'gbtn':'ghostbtn'}" onclick="setTheme('light')">فاتح</button>
+    </div></div>
+   <div style="padding-top:14px">
+    <div class="t" style="font-weight:700;font-size:.92rem">📍 منطقتي</div>
+    <div class="d" style="font-size:.74rem;color:var(--muted);margin:3px 0 8px">بتتملى تلقائي في عنوان التوصيل لما تطلب</div>
+    <div style="display:flex;gap:8px">
+     <input id="fArea" placeholder="مثال: العجمي — الهانوفيل" value="${esc(area)}">
+     <button class="addbtn" style="white-space:nowrap" onclick="saveArea()">حفظ</button>
+    </div>
+   </div>
+  </div>
+  <a class="bigbtn" href="track.html"><span class="ic">📦</span><span><div class="t">تابع طلبك</div><div class="d">برقم الطلب وموبايلك</div></span></a>
+  <div class="notecard">أليكس شوب © 2026 · صُنع بحب في العجمي ✦</div>`;
+ }
+}
+async function applyDiscount(){
+ const inp=document.getElementById('fDisc');
+ const code=inp.value.trim();
+ if(!code)return;
+ const btn=document.getElementById('discBtn');btn.disabled=true;btn.textContent='بنشيك...';
+ let errText=null;
+ try{
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/check_discount',{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({p_code:code})});
+  if(!r.ok)throw 0;
+  const v=await r.json();
+  if(v===null||typeof v!=='number'){
+   setDisc(null);
+   errText='الكود ده مش صح أو مش شغال دلوقتي';
+  }else{
+   setDisc({code:code.toUpperCase(),value:v});
   }
-  html+='</div>';
+ }catch(e){
+  errText='حصلت مشكلة في الاتصال. اتأكد من الإنترنت وجرب تاني.';
  }
- html+='<div style="text-align:right;margin-top:14px"><b>الأصناف:</b>';
- html+='<div class="items">'+(o.items||[]).map(x=>esc(x.name)+' × '+x.qty+' ('+(x.price*x.qty)+' ج) — '+esc(x.store||'')).join('<br>')+'</div>';
- html+='<div class="tot">الإجمالي: '+o.total+' ج</div>';
- html+='<div class="meta">شامل توصيل '+(o.fee||0)+' ج'+(o.discount>0?' + خصم −'+o.discount+' ج':'')+'</div></div>';
- html+='<button class="cta" onclick="track()">🔄 تحديث الحالة</button>';
- html+='</div>';
- document.getElementById('result').innerHTML=html;
+ render();
+ if(errText){
+  const m=document.getElementById('discMsg');
+  if(m){m.textContent=errText;m.classList.add('show');}
+ }
 }
-// لو جاي من صفحة التأكيد، عبّي رقم الطلب والموبايل لوحدهم
-try{
- const q=new URLSearchParams(location.search);
- const o=q.get('o');
- if(o)document.getElementById('fOrder').value=o;
- const savedPhone=localStorage.getItem('alexshop_phone');
- if(savedPhone&&!document.getElementById('fPhone').value)document.getElementById('fPhone').value=savedPhone;
- if(o&&document.getElementById('fPhone').value)track();
-}catch(e){}
-// زرار الدعم العائم (بيظهر لو رقم الدعم متسجل فوق)
-if(SUPPORT_WA){
- const a=document.createElement('a');
- a.className='fab';
- a.href='https://wa.me/'+SUPPORT_WA+'?text='+encodeURIComponent('السلام عليكم 👋 عندي استفسار عن طلبي من أليكس شوب');
- a.target='_blank';
- a.title='كلم الدعم واتساب';
- a.textContent='💬';
- document.body.appendChild(a);
+function rmDisc(){setDisc(null);render()}
+async function placeOrder(){
+ const n=document.getElementById('fName').value.trim(),
+       ph=document.getElementById('fPhone').value.trim(),
+       a=document.getElementById('fAddr').value.trim();
+ let ok=true;
+ const chk=(cond,id)=>{document.getElementById(id).classList.toggle('show',!cond);if(!cond)ok=false};
+ chk(n.length>=2,'eName');chk(/^01[0-9]{9}$/.test(ph.replace(/\s/g,'')),'ePhone');chk(a.length>=5,'eAddr');
+ if(!ok)return;
+ const btn=document.getElementById('orderBtn');btn.disabled=true;btn.textContent='جاري إرسال الطلب...';
+ const c=getCart();let sub=0;
+ const items=c.map(i=>{const p=findProd(i.id);sub+=p.price*i.qty;return{name:p.name,price:p.price,qty:i.qty,store:p.storeName}});
+ const pay=document.querySelector('input[name=pay]:checked').value;
+ const d=getDisc();
+ const disc=discAmount(sub);
+ const total=Math.max(0,sub+fee()-disc);
+ try{
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/place_order',{method:'POST',
+   headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({p_customer_name:n,p_phone:ph,p_address:a,p_payment:pay,p_items:items,p_subtotal:sub,p_fee:fee(),p_total:total,p_discount_code:d?d.code:null})});
+  if(!r.ok)throw 0;
+  const newId=await r.json();
+  setCart([]);setDisc(null);
+  try{
+   localStorage.setItem('alexshop_phone',ph);
+   localStorage.setItem('alexshop_name',n);
+   localStorage.setItem('alexshop_last_order',String(newId));
+   saveOrderRec({id:'AX-'+newId,ts:Date.now(),total:total,items:items.reduce((s,i)=>s+i.qty,0),stores:[...new Set(items.map(i=>i.store))]});
+  }catch(e){}
+  go('confirm',{id:'AX-'+newId,name:n,total:total,payment:pay,discount:disc});
+ }catch(e){
+  btn.disabled=false;btn.textContent='أكّد الطلب';
+  alert('حصلت مشكلة في إرسال الطلب. اتأكد من الإنترنت وجرب تاني.');
+ }
 }
+loadStores();
 </script>
 </body>
 </html>
