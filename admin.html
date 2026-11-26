@@ -88,7 +88,7 @@ function copyTxt(t,okMsg){
  }else prompt('انسخ اللينك ده:',t);
 }
 const app=document.getElementById('app');
-const STATUSES=['جديد','مقبول','خرج للتوصيل','اتسلّم','ملغي'];
+const STATUSES=['جديد','مقبول','اتجهز','خرج للتوصيل','اتسلّم','ملغي'];
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function hdrs(json){const h={apikey:SUPABASE_KEY};if(TOKEN)h.Authorization='Bearer '+TOKEN;if(json)h['Content-Type']='application/json';return h}
 async function api(path,opts){
@@ -195,6 +195,7 @@ function renderOrders(){
   <div class="meta">📍 ${esc(o.address)}</div>
   ${o.location_lat!=null&&o.location_lng!=null?`<div class="meta">🗺 <a href="https://maps.google.com/?q=${o.location_lat},${o.location_lng}" target="_blank" style="color:#2563eb;font-weight:700">افتح موقع العميل على الخريطة</a></div>`:''}
   <div class="meta">🕐 ${new Date(o.created_at).toLocaleString('ar-EG')}</div>
+  ${o.status==='مقبول'?`<button class="btn sm" style="margin-top:8px;background:#0891b2" onclick="setStatus(${o.id},'اتجهز')">✅ الطلب اتجهز — التعيين أوتوماتيك</button>`:''}
   <div class="items">${(o.items||[]).map(x=>`${esc(x.name)} × ${x.qty} (${x.price*x.qty} ج) — ${esc(x.store)}`).join('<br>')}</div>
   ${o.discount>0?`<div class="meta" style="color:#15803d;font-weight:700">🎟 خصم: −${o.discount} ج${o.discount_code?' ('+esc(o.discount_code)+')':''}</div>`:''}
   <div class="tot">الإجمالي: ${o.total} ج (شامل توصيل ${o.fee} ج)</div>
@@ -234,11 +235,12 @@ function renderDrivers(){
  <div class="refreshbar"><h2>🛵 المناديب (${DRIVERS.length})</h2>
  <button class="btn sm gray" onclick="loadDrivers()">🔄 تحديث</button></div>
  <div class="note">كل مندوب ليه <b>لينك خاص بيه</b>: بيفتحه يشوف الطلبات اللي عليه بس ويحدّث حالتها (خرج للتوصيل ← اتسلّم). اللينك زي كلمة سر — متبعتوش غير للمندوب نفسه.</div>
- ${DRIVERS.length?`<table><tr><th>المندوب</th><th>الموبايل</th><th>الحالة</th><th></th></tr>
+ ${DRIVERS.length?`<table><tr><th>المندوب</th><th>الموبايل</th><th>الحالة</th><th>التاحة</th><th></th></tr>
  ${DRIVERS.map(d=>`<tr>
   <td><b>${esc(d.name)}</b></td>
   <td dir="ltr">${esc(d.phone||'—')}</td>
   <td>${d.active?'✅ شغال':'⏸ متوقف'}</td>
+  <td>${d.on_duty?'🟢 متاح':'🔴 مش متاح'}</td>
   <td style="white-space:nowrap">
    <button class="btn sm" onclick="copyTxt(DRV_URL+'${d.token}','اللينك اتنسخ ✅ ابعته للمندوب')">نسخ اللينك</button>
    ${d.phone?`<a class="btn sm" style="text-decoration:none;display:inline-block" target="_blank" href="https://wa.me/${waNum(d.phone)}?text=${encodeURIComponent('لينك صفحة طلباتك في أليكس شوب (ليك انت بس، متبعتوش لحد):\n'+DRV_URL+d.token)}">ابعت واتساب</a>`:''}
