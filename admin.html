@@ -24,6 +24,8 @@ main{max-width:900px;margin:0 auto;padding:16px}
 .order .meta{font-size:.8rem;color:#666;margin-top:4px}
 .order .items{font-size:.85rem;margin-top:8px;background:#f9fafb;border-radius:8px;padding:8px 10px}
 .order .tot{font-weight:800;margin-top:6px}
+.drv{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px}
+@media(max-width:560px){.drv{grid-template-columns:1fr}}
 select.st{padding:6px 10px;border-radius:8px;border:1.5px solid #d1d5db;font-weight:700;font-size:.82rem}
 table{width:100%;border-collapse:collapse;font-size:.9rem}
 th,td{padding:9px 8px;text-align:right;border-bottom:1px solid #eee}
@@ -60,10 +62,11 @@ summary{cursor:pointer;font-weight:700;font-size:.88rem;color:#15803d}
 </div>
 <div id="panel" style="display:none">
 <header><div class="wrap">
- <div class="logo">🛠 لوحة إدارة أليكس شوب<small>المتاجر · المنتجات · الطلبات</small></div>
+ <div class="logo">🛠 لوحة إدارة أليكس شوب<small>المتاجر · المنتجات · الطلبات · الخصومات</small></div>
  <div class="tabs">
   <button id="tOrders" class="on" onclick="tab('orders')">الطلبات</button>
   <button id="tStores" onclick="tab('stores')">المتاجر والمنتجات</button>
+  <button id="tCodes" onclick="tab('codes')">أكواد الخصم</button>
   <button onclick="logout()">خروج</button>
  </div>
 </div></header>
@@ -75,7 +78,7 @@ const SUPABASE_URL='https://uwovnuhwayekvcwkulgx.supabase.co';
 const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
 // ============================================================
 let TOKEN=null, REFRESH=null;
-let ORDERS=[], STORES=[], cur='orders', selStore=null;
+let ORDERS=[], STORES=[], CODES=[], cur='orders', selStore=null;
 const app=document.getElementById('app');
 const STATUSES=['جديد','مقبول','خرج للتوصيل','اتسلّم','ملغي'];
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
@@ -127,10 +130,16 @@ document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')
 async function showPanel(){
  document.getElementById('gate').style.display='none';
  document.getElementById('panel').style.display='block';
- await Promise.all([loadOrders(),loadStores()]);
+ await Promise.all([loadOrders(),loadStores(),loadCodes()]);
  render();
 }
-function tab(t){cur=t;document.getElementById('tOrders').className=t==='orders'?'on':'';document.getElementById('tStores').className=t==='stores'?'on':'';render()}
+function tab(t){
+ cur=t;
+ document.getElementById('tOrders').className=t==='orders'?'on':'';
+ document.getElementById('tStores').className=t==='stores'?'on':'';
+ document.getElementById('tCodes').className=t==='codes'?'on':'';
+ render();
+}
 async function loadOrders(){
  try{
   const r=await api('/rest/v1/orders?order=created_at.desc',{headers:hdrs()});
@@ -147,7 +156,15 @@ async function loadStores(){
  }catch(e){}
  if(cur==='stores')render();
 }
-function render(){cur==='orders'?renderOrders():renderStores()}
+async function loadCodes(){
+ try{
+  const r=await api('/rest/v1/discount_codes?select=*&order=created_at.desc',{headers:hdrs()});
+  if(!r.ok)throw 0;
+  CODES=await r.json();
+ }catch(e){}
+ if(cur==='codes')render();
+}
+function render(){cur==='orders'?renderOrders():cur==='stores'?renderStores():renderCodes()}
 function renderOrders(){
  app.innerHTML=`<div class="panel">
  <div class="refreshbar"><h2>📦 الطلبات (${ORDERS.length})</h2>
@@ -161,7 +178,13 @@ function renderOrders(){
   <div class="meta">📍 ${esc(o.address)}</div>
   <div class="meta">🕐 ${new Date(o.created_at).toLocaleString('ar-EG')}</div>
   <div class="items">${(o.items||[]).map(x=>`${esc(x.name)} × ${x.qty} (${x.price*x.qty} ج) — ${esc(x.store)}`).join('<br>')}</div>
+  ${o.discount>0?`<div class="meta" style="color:#15803d;font-weight:700">🎟 خصم: −${o.discount} ج${o.discount_code?' ('+esc(o.discount_code)+')':''}</div>`:''}
   <div class="tot">الإجمالي: ${o.total} ج (شامل توصيل ${o.fee} ج)</div>
+  <div class="drv">
+   <input id="dn-${o.id}" value="${esc(o.driver_name||'')}" placeholder="اسم المندوب">
+   <input id="dp-${o.id}" value="${esc(o.driver_phone||'')}" placeholder="موبايل المندوب" dir="ltr" inputmode="tel">
+   <button class="btn sm" onclick="setDriver(${o.id})">حفظ المندوب</button>
+  </div>
  </div>`).join(''):'<div class="empty">مفيش طلبات لسه. أول ما عميل يطلب من الموقع هيظهر هنا.</div>'}
  </div>`;
 }
@@ -171,6 +194,63 @@ async function setStatus(id,v){
   const r=await api('/rest/v1/orders?id=eq.'+id,{method:'PATCH',headers:hdrs(true),body:JSON.stringify({status:v})});
   if(!r.ok)throw 0;
  }catch(e){alert('حصلت مشكلة في تحديث الحالة');loadOrders()}
+}
+async function setDriver(id){
+ const n=document.getElementById('dn-'+id).value.trim();
+ const p=document.getElementById('dp-'+id).value.trim();
+ try{
+  const r=await api('/rest/v1/orders?id=eq.'+id,{method:'PATCH',headers:hdrs(true),body:JSON.stringify({driver_name:n||null,driver_phone:p||null})});
+  if(!r.ok)throw 0;
+  const o=ORDERS.find(x=>x.id===id);if(o){o.driver_name=n;o.driver_phone=p;}
+  alert('اتحفظ ✅ العميل هيشوف بيانات المندوب في صفحة المتابعة');
+ }catch(e){alert('حصلت مشكلة في حفظ المندوب')}
+}
+function renderCodes(){
+ app.innerHTML=`<div class="panel">
+ <div class="refreshbar"><h2>🎟 أكواد الخصم (${CODES.length})</h2>
+ <button class="btn sm gray" onclick="loadCodes()">🔄 تحديث</button></div>
+ ${CODES.length?`<table><tr><th>الكود</th><th>قيمة الخصم</th><th>الحالة</th><th></th></tr>
+ ${CODES.map(c=>`<tr>
+  <td><b dir="ltr">${esc(c.code)}</b></td>
+  <td>${c.value} ج</td>
+  <td>${c.active?'✅ شغال':'⏸ متوقف'}</td>
+  <td><button class="btn sm gray" onclick="toggleCode('${c.code}',${!c.active})">${c.active?'أوقف':'شغّل'}</button>
+      <button class="btn sm red" onclick="delCode('${c.code}')">حذف</button></td></tr>`).join('')}
+ </table>`:'<div class="empty">مفيش أكواد لسه. ضيف أول كود من تحت.</div>'}
+ <details open><summary>➕ ضيف كود جديد</summary>
+  <div class="grid2">
+   <div><label>الكود (حروف إنجليزي وأرقام)</label><input id="ncCode" dir="ltr" placeholder="ALEX10"></div>
+   <div><label>قيمة الخصم (جنيه)</label><input id="ncVal" type="number" min="1" step="1" placeholder="10"></div>
+  </div>
+  <button class="btn" style="margin-top:10px" onclick="addCode()">ضيف الكود</button>
+ </details>
+ </div>`;
+}
+async function addCode(){
+ let code=document.getElementById('ncCode').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+ const v=parseFloat(document.getElementById('ncVal').value);
+ if(!code)return alert('اكتب الكود بالإنجليزي (حروف وأرقام بس)');
+ if(isNaN(v)||v<=0)return alert('اكتب قيمة الخصم بالجنيه');
+ try{
+  const r=await api('/rest/v1/discount_codes',{method:'POST',headers:{...hdrs(true),Prefer:'resolution=merge-duplicates'},body:JSON.stringify({code:code,value:v,active:true})});
+  if(!r.ok)throw 0;
+  await loadCodes();
+ }catch(e){alert('حصلت مشكلة في إضافة الكود')}
+}
+async function toggleCode(code,on){
+ try{
+  const r=await api('/rest/v1/discount_codes?code=eq.'+encodeURIComponent(code),{method:'PATCH',headers:hdrs(true),body:JSON.stringify({active:on})});
+  if(!r.ok)throw 0;
+  await loadCodes();
+ }catch(e){alert('حصلت مشكلة في تحديث الكود')}
+}
+async function delCode(code){
+ if(!confirm('تحذف الكود '+code+'؟'))return;
+ try{
+  const r=await api('/rest/v1/discount_codes?code=eq.'+encodeURIComponent(code),{method:'DELETE',headers:hdrs()});
+  if(!r.ok)throw 0;
+  await loadCodes();
+ }catch(e){alert('حصلت مشكلة في حذف الكود')}
 }
 function renderStores(){
  app.innerHTML=`
