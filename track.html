@@ -69,8 +69,8 @@ const SUPABASE_KEY='sb_publishable_OQlxqtmGtmhQOjRdjFmsNA_sHMpAMUy';
 // لو سيبته فاضي زرار الدعم مش هيظهر
 const SUPPORT_WA='201202255463';
 // ============================================================
-const STEPS=['جديد','مقبول','خرج للتوصيل','اتسلّم'];
-const ICONS=['📝','✅','🛵','🎉'];
+const STEPS=['جديد','مقبول','اتجهز','خرج للتوصيل','اتسلّم'];
+const ICONS=['📝','✅','📦','🛵','🎉'];
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function orderNum(v){v=String(v).trim().toUpperCase().replace(/^AX[-\s]?/,'').replace(/\D/g,'');return v?parseInt(v,10):null}
 function waNum(p){let d=String(p).replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
@@ -110,8 +110,9 @@ function renderOrder(o){
   ).join('')+'</div>';
   if(idx===0)html+='<div class="meta" style="margin-top:8px">طلبك اتسجّل وبنراجعه 👍</div>';
   else if(idx===1)html+='<div class="meta" style="margin-top:8px">طلبك اتقبل وبنجهزه 👨‍🍳</div>';
-  else if(idx===2)html+='<div class="meta" style="margin-top:8px">الطلب خرج للتوصيل، في الطريق ليك 🛵</div>';
-  else if(idx===3)html+='<div class="meta" style="margin-top:8px">اتسلّم! بالهنا والشفا 🎉</div>';
+  else if(idx===2)html+='<div class="meta" style="margin-top:8px">طلبك اتجهز ومستني الكابتن يتحرك 📦</div>';
+  else if(idx===3)html+='<div class="meta" style="margin-top:8px">الطلب خرج للتوصيل، في الطريق ليك 🛵</div>';
+  else if(idx===4)html+='<div class="meta" style="margin-top:8px">اتسلّم! بالهنا والشفا 🎉</div>';
  }
  if(!isCancelled&&(o.driver_name||o.driver_phone)){
   html+='<div class="driver">🛵 المندوب اللي جايلك: <b>'+esc(o.driver_name||'')+'</b>';
