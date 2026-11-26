@@ -265,6 +265,13 @@ function render(){
   :'<div class="empty">السلة فاضية 🛒<br><br><button class="addbtn" onclick="go(\'home\')">اتفرج على المحلات</button></div>'}
   </div>`;
  }
+ else if(state.view==='checkout'&&!getToken()){
+  app.innerHTML=`
+  <button class="back" onclick="go('cart')">→ رجوع للسلة</button>
+  <div class="panel" style="text-align:center"><h2>🔐 سجل دخولك الأول</h2>
+   <p style="color:var(--muted);margin:10px 0">عشان تأكد طلبك لازم يكون ليك حساب.<br>بتسجل برقم موبايلك وكلمة سر في ثواني، وطلباتك تفضل محفوظة في حسابك.</p>
+   <button class="cta" onclick="go('profile')">تسجيل الدخول / حساب جديد</button></div>`;
+ }
  else if(state.view==='checkout'){
   const savedName=(()=>{try{return localStorage.getItem('alexshop_name')||''}catch(e){return ''}})();
   const savedPhone=(()=>{try{return localStorage.getItem('alexshop_phone')||''}catch(e){return ''}})();
@@ -273,7 +280,7 @@ function render(){
   <button class="back" onclick="go('cart')">→ رجوع للسلة</button>
   <div class="panel"><h2>📦 بيانات التوصيل</h2>
    <label>الاسم</label><input id="fName" placeholder="اسمك الكامل" value="${esc(savedName)}"><div class="err" id="eName">اكتب اسمك</div>
-   <label>رقم الموبايل</label><input id="fPhone" inputmode="tel" placeholder="01xxxxxxxxx" value="${esc(savedPhone)}"><div class="err" id="ePhone">اكتب رقم موبايل صحيح (11 رقم يبدأ بـ 01)</div>
+   <label>رقم الموبايل (من حسابك)</label><input id="fPhone" inputmode="tel" value="${esc(savedPhone)}" readonly style="opacity:.7"><div class="err" id="ePhone">اكتب رقم موبايل صحيح (11 رقم يبدأ بـ 01)</div>
    <label>العنوان بالتفصيل</label><input id="fAddr" placeholder="المنطقة، الشارع، رقم العمارة والشقة" value="${esc(savedArea)}"><div class="err" id="eAddr">اكتب العنوان</div>
    <label>موقعك على الخريطة (اختياري)</label>
    <button type="button" class="locbtn" id="locBtn" onclick="useMyLocation()">${geoLat!=null?'📍 حدّث مكاني':'📍 استخدم مكاني'}</button>
@@ -524,6 +531,8 @@ function useMyLocation(){
   {enableHighAccuracy:true,timeout:12000,maximumAge:0});
 }
 async function placeOrder(){
+ const tk=getToken();
+ if(!tk){go('profile');return}
  const n=document.getElementById('fName').value.trim(),
        ph=document.getElementById('fPhone').value.trim(),
        a=document.getElementById('fAddr').value.trim();
@@ -541,8 +550,8 @@ async function placeOrder(){
  try{
   const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/place_order',{method:'POST',
    headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
-   body:JSON.stringify({p_customer_name:n,p_phone:ph,p_address:a,p_payment:pay,p_items:items,p_subtotal:sub,p_fee:fee(),p_total:total,p_discount_code:d?d.code:null,p_lat:geoLat,p_lng:geoLng})});
-  if(!r.ok)throw 0;
+   body:JSON.stringify({p_token:tk,p_customer_name:n,p_address:a,p_payment:pay,p_items:items,p_subtotal:sub,p_fee:fee(),p_total:total,p_discount_code:d?d.code:null,p_lat:geoLat,p_lng:geoLng})});
+  if(!r.ok){const e=await r.json().catch(()=>null);if(e&&e.message&&String(e.message).includes('login_required')){try{localStorage.removeItem('alexshop_token')}catch(_){};alert('جلستك خلصت — سجل دخولك تاني');go('profile');return}throw 0}
   const newId=await r.json();
   setCart([]);setDisc(null);geoLat=null;geoLng=null;
   try{
