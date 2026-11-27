@@ -45,6 +45,7 @@ body.light .back{color:var(--gold)}
 .panel .sub{font-size:.82rem;color:var(--muted);margin-top:5px}
 .prod{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
 .prod .info{flex:1}
+.prod .pimg{width:54px;height:54px;object-fit:cover;border-radius:12px;border:1px solid var(--border);background:var(--card2);flex:none}
 .prod .name{font-weight:700;font-size:.95rem}
 .prod .unit{font-size:.74rem;color:var(--muted);margin-top:2px}
 .prod .price{font-family:'El Messiri',serif;color:var(--gold2);font-weight:700;font-size:1rem;margin-top:5px}
@@ -166,12 +167,14 @@ const DEFAULT_STORES=[
   {id:'p3',name:'مكسرات مشكلة',unit:'ربع كيلو',price:120},{id:'p4',name:'لب سوري',unit:'ربع كيلو',price:65}]}
 ];
 let STORES=DEFAULT_STORES;
+let IMGMAP={};
 async function loadStores(){
  try{
   const r=await fetch(SUPABASE_URL+'/rest/v1/stores?select=*&order=name',{headers:{apikey:SUPABASE_KEY}});
   if(!r.ok)throw 0;
   const d=await r.json();
   if(d.length)STORES=d.map(x=>({id:x.id,name:x.name,cat:x.cat,icon:x.icon,time:x.delivery_time,min:x.min_order,products:x.products||[]}));
+  try{const mr=await fetch('images-manifest.json');if(mr.ok)IMGMAP=await mr.json()}catch(e){}
  }catch(e){/* لو مفيش نت نعرض البيانات الافتراضية */}
  render();
 }
@@ -234,6 +237,7 @@ function render(){
   <div class="panel"><h2>${s.icon||'🏪'} ${esc(s.name)}</h2>
   <div class="sub">${esc(s.cat)} · ⏱ ${esc(s.time)} · حد أدنى ${s.min} ج</div></div>
   ${s.products.map(p=>{const pid=s.id+'/'+p.id,q=cartQty(pid);return `<div class="prod">
+   ${IMGMAP[pid]?`<img class="pimg" src="${esc(IMGMAP[pid])}" alt="" loading="lazy" onerror="this.remove()">`:''}
    <div class="info"><div class="name">${esc(p.name)}</div><div class="unit">${esc(p.unit)}</div><div class="price">${p.price} ج</div></div>
    ${q===0?`<button class="addbtn" onclick="addToCart('${pid}')">ضيف</button>`
     :`<div class="stepper"><button onclick="addToCart('${pid}')">+</button><span class="q">${q}</span><button onclick="decCart('${pid}')">−</button></div>`}
