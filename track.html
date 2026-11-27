@@ -72,6 +72,8 @@ const SUPPORT_WA='201202255463';
 const STEPS=['جديد','مقبول','اتجهز','خرج للتوصيل','اتسلّم'];
 const ICONS=['📝','✅','📦','🛵','🎉'];
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function m2(n){return Math.round((Number(n)||0)*100)/100}
+function fmtM(n){return String(m2(n))}
 function orderNum(v){v=String(v).trim().toUpperCase().replace(/^AX[-\s]?/,'').replace(/\D/g,'');return v?parseInt(v,10):null}
 function waNum(p){let d=String(p).replace(/\D/g,'');if(d.startsWith('0'))d='2'+d;return d}
 async function track(){
@@ -123,9 +125,9 @@ function renderOrder(o){
   html+='</div>';
  }
  html+='<div style="text-align:right;margin-top:14px"><b>الأصناف:</b>';
- html+='<div class="items">'+(o.items||[]).map(x=>esc(x.name)+' × '+x.qty+' ('+(x.price*x.qty)+' ج) — '+esc(x.store||'')).join('<br>')+'</div>';
- html+='<div class="tot">الإجمالي: '+o.total+' ج</div>';
- html+='<div class="meta">شامل توصيل '+(o.fee||0)+' ج'+(o.discount>0?' + خصم −'+o.discount+' ج':'')+'</div></div>';
+ html+='<div class="items">'+(o.items||[]).map(x=>esc(x.name)+' × '+x.qty+' ('+fmtM(x.price*x.qty)+' ج) — '+esc(x.store||'')).join('<br>')+'</div>';
+ html+='<div class="tot">الإجمالي: '+fmtM(o.total)+' ج</div>';
+ html+='<div class="meta">شامل توصيل '+fmtM(o.fee||0)+' ج'+(o.discount>0?' + خصم −'+fmtM(o.discount)+' ج':'')+'</div></div>';
  html+='<button class="cta" onclick="track()">🔄 تحديث الحالة</button>';
  html+='</div>';
  document.getElementById('result').innerHTML=html;
