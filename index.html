@@ -152,23 +152,7 @@ const K_DISC='alexshop_discount';
 const K_ORDERS='alexshop_orders';
 const K_THEME='alexshop_theme';
 const K_AREA='alexshop_area';
-const DEFAULT_STORES=[
- {id:'s1',name:'سوبر ماركت النور',cat:'بقالة وسوبر ماركت',icon:'🏪',time:'30-45 دقيقة',min:50,products:[
-  {id:'p1',name:'أرز مصري فاخر',unit:'كيلو',price:38},{id:'p2',name:'سكر',unit:'كيلو',price:32},
-  {id:'p3',name:'زيت عباد الشمس',unit:'700 مل',price:75},{id:'p4',name:'مكرونة',unit:'400 جم',price:14},
-  {id:'p5',name:'شاي ليبتون',unit:'100 فتلة',price:85},{id:'p6',name:'جبنة رومي',unit:'كيلو',price:280}]},
- {id:'s2',name:'خضار وفاكهة الحاج سيد',cat:'خضار وفاكهة',icon:'🥬',time:'25-40 دقيقة',min:30,products:[
-  {id:'p1',name:'طماطم',unit:'كيلو',price:18},{id:'p2',name:'بطاطس',unit:'كيلو',price:16},
-  {id:'p3',name:'بصل',unit:'كيلو',price:20},{id:'p4',name:'موز',unit:'كيلو',price:35},
-  {id:'p5',name:'برتقال',unit:'كيلو',price:22},{id:'p6',name:'خيار',unit:'كيلو',price:20}]},
- {id:'s3',name:'مخبز العائلة',cat:'مخبوزات',icon:'🥐',time:'20-30 دقيقة',min:20,products:[
-  {id:'p1',name:'عيش بلدي',unit:'5 أرغفة',price:15},{id:'p2',name:'عيش فينو',unit:'5 أرغفة',price:20},
-  {id:'p3',name:'كرواسون بالشوكولاتة',unit:'قطعة',price:18},{id:'p4',name:'باتيه باللحمة',unit:'قطعة',price:22},
-  {id:'p5',name:'قطر الشام',unit:'كيلو',price:90}]},
- {id:'s4',name:'بن البرازيلي',cat:'قهوة ومحمصة',icon:'☕',time:'35-50 دقيقة',min:40,products:[
-  {id:'p1',name:'بن تركي سادة',unit:'ربع كيلو',price:95},{id:'p2',name:'بن فرنساوي',unit:'ربع كيلو',price:105},
-  {id:'p3',name:'مكسرات مشكلة',unit:'ربع كيلو',price:120},{id:'p4',name:'لب سوري',unit:'ربع كيلو',price:65}]}
-];
+const DEFAULT_STORES=[]; // المتاجر بتتجاب من قاعدة البيانات بس — مفيش بيانات ثابتة
 let STORES=DEFAULT_STORES;
 let IMGMAP={};
 let STORECAT={};
@@ -584,4 +568,4 @@ loadStores();
 checkSession();
 </script>
 </body>
- </html>
+</html>
