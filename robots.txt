@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /driver
+Disallow: /driver.html
+Disallow: /track
+Disallow: /track.html
+
+Sitemap: https://alex-shop.alexeg.workers.dev/sitemap.xml
