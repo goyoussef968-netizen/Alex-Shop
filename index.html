@@ -40,6 +40,9 @@ main{max-width:720px;margin:0 auto;padding:16px 16px 110px}
 body.light .badge{color:var(--gold)}
 .back{display:inline-block;background:none;border:1px solid var(--border2);border-radius:999px;color:var(--gold2);font-weight:700;font-size:.82rem;cursor:pointer;margin-bottom:12px;padding:7px 16px}
 body.light .back{color:var(--gold)}
+.cattabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:4px}
+.ctab{flex:none;background:none;border:1px solid var(--border2);border-radius:999px;color:var(--muted);font-weight:700;font-size:.78rem;cursor:pointer;padding:6px 14px}
+.ctab.on{background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--golddk);border-color:transparent}
 .panel{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:12px}
 .panel h2{font-family:'El Messiri',serif;font-size:1.2rem}
 .panel .sub{font-size:.82rem;color:var(--muted);margin-top:5px}
@@ -168,6 +171,8 @@ const DEFAULT_STORES=[
 ];
 let STORES=DEFAULT_STORES;
 let IMGMAP={};
+let STORECAT={};
+function setCat(sid,c){STORECAT[sid]=c;render()}
 async function loadStores(){
  try{
   const r=await fetch(SUPABASE_URL+'/rest/v1/stores?select=*&order=name',{headers:{apikey:SUPABASE_KEY}});
@@ -232,11 +237,15 @@ function render(){
  }
  else if(state.view==='store'){
   const s=getStores().find(x=>x.id===state.arg);if(!s)return go('home');
+  const cats=[...new Set(s.products.map(p=>p.cat).filter(Boolean))];
+  const cur=STORECAT[s.id]||'';
+  const plist=cur?s.products.filter(p=>p.cat===cur):s.products;
   app.innerHTML=`
   <button class="back" onclick="go('home')">→ رجوع للمحلات</button>
   <div class="panel"><h2>${s.icon||'🏪'} ${esc(s.name)}</h2>
   <div class="sub">${esc(s.cat)} · ⏱ ${esc(s.time)} · حد أدنى ${s.min} ج</div></div>
-  ${s.products.map(p=>{const pid=s.id+'/'+p.id,q=cartQty(pid);return `<div class="prod">
+  ${cats.length?`<div class="cattabs"><button class="ctab${cur?'':' on'}" onclick="setCat('${s.id}','')">الكل</button>${cats.map(c=>`<button class="ctab${cur===c?' on':''}" onclick="setCat('${s.id}','${c}')">${esc(c)}</button>`).join('')}</div>`:''}
+  ${plist.map(p=>{const pid=s.id+'/'+p.id,q=cartQty(pid);return `<div class="prod">
    ${IMGMAP[pid]?`<img class="pimg" src="${esc(IMGMAP[pid])}" alt="" loading="lazy" onerror="this.remove()">`:''}
    <div class="info"><div class="name">${esc(p.name)}</div><div class="unit">${esc(p.unit)}</div><div class="price">${p.price} ج</div></div>
    ${q===0?`<button class="addbtn" onclick="addToCart('${pid}')">ضيف</button>`
@@ -575,4 +584,4 @@ loadStores();
 checkSession();
 </script>
 </body>
-</html>
+ </html>
