@@ -310,10 +310,10 @@ function render(){
   </div>`;
  }
  else if(state.view==='profile'){
-  const orders=getOrders();
-  const name=(()=>{try{return localStorage.getItem('alexshop_name')||''}catch(e){return ''}})();
-  const phone=(()=>{try{return localStorage.getItem('alexshop_phone')||''}catch(e){return ''}})();
   const tok=getToken();
+  const orders=tok?getOrders():[];
+  const name=tok?(()=>{try{return localStorage.getItem('alexshop_name')||''}catch(e){return ''}})():'';
+  const phone=tok?(()=>{try{return localStorage.getItem('alexshop_phone')||''}catch(e){return ''}})():'';
   const total=orders.reduce((a,o)=>a+(o.total||0),0);
   const since=orders.length?new Date(orders[orders.length-1].ts).toLocaleDateString('ar-EG',{month:'long',year:'numeric'}):'—';
   const initial=name?name.trim()[0]:'👤';
@@ -333,7 +333,7 @@ function render(){
    <div class="err" id="eAuth"></div>
    <button class="cta" id="authBtn" onclick="${authMode==='signup'?'doSignup()':'doLogin()'}">${authMode==='signup'?'إنشاء الحساب':'دخول'}</button>
    <button class="cta ghost" onclick="toggleAuth()">${authMode==='signup'?'عندك حساب؟ سجل دخولك':'جديد عندنا؟ اعمل حساب'}</button></div>`}
-  <div class="stats">
+  ${tok?`<div class="stats">
    <div class="stat"><div class="v">${orders.length}</div><div class="k">طلبات</div></div>
    <div class="stat"><div class="v">${total} ج</div><div class="k">إجمالي مشترياتك</div></div>
    <div class="stat"><div class="v">${since}</div><div class="k">عميل منذ</div></div>
@@ -347,7 +347,7 @@ function render(){
   </div>
   <div class="notecard">دوس على أي طلب عشان تتابع حالته.<br>طلباتك وبياناتك محفوظة على جهازك ده بس — مفيش حد يقدر يشوفها برقمك.</div>`
   :`<div class="empty">لسه مفيش طلبات من الجهاز ده 🌱<br><br><button class="addbtn" onclick="go('home')">ابدأ أول طلب</button></div>
-  <div class="notecard">أول ما تطلب، طلباتك هتتحفظ هنا على جهازك بس — مش على السيرفر.</div>`}`;
+  <div class="notecard">أول ما تطلب، طلباتك هتتحفظ هنا على جهازك بس — مش على السيرفر.</div>`}`:''}`;
  }
  else if(state.view==='support'){
   const waNum=SUPPORT_WA;
@@ -478,6 +478,7 @@ async function authSubmit(fn){
    const m={wrong_credentials:'الرقم أو كلمة السر مش صح',phone_taken:'الرقم ده مسجل قبل كده — جرّب تسجل دخولك',invalid_phone:'اكتب رقم موبايل صحيح',weak_password:'كلمة السر لازم تكون 6 حروف أو أرقام على الأقل'}[d&&d.error];
    throw (m||'حصلت مشكلة — جرّب تاني');
   }
+  try{const oldPh=localStorage.getItem('alexshop_phone');if(oldPh&&oldPh!==d.phone){localStorage.removeItem('alexshop_orders');localStorage.removeItem('alexshop_last_order')}}catch(_){}
   saveSession(d.token,d.phone,d.name||nm);
   authMode='login';render();
  }catch(x){
@@ -486,7 +487,7 @@ async function authSubmit(fn){
  }
 }
 function doLogout(){
- try{localStorage.removeItem('alexshop_token')}catch(e){}
+ try{['alexshop_token','alexshop_name','alexshop_phone','alexshop_last_order','alexshop_orders'].forEach(k=>localStorage.removeItem(k))}catch(e){}
  authMode='login';render();
 }
 async function checkSession(){
@@ -496,7 +497,7 @@ async function checkSession(){
    headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
    body:JSON.stringify({p_token:t})});
   const d=await r.json().catch(()=>null);
-  if(!d||!d.ok){try{localStorage.removeItem('alexshop_token')}catch(e){}render();return}
+  if(!d||!d.ok){try{['alexshop_token','alexshop_name','alexshop_phone','alexshop_last_order','alexshop_orders'].forEach(k=>localStorage.removeItem(k))}catch(e){}render();return}
   try{localStorage.setItem('alexshop_phone',d.phone||'');if(d.name)localStorage.setItem('alexshop_name',d.name)}catch(e){}
  }catch(e){}
 }
