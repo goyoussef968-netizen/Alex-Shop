@@ -178,7 +178,9 @@ function cartQty(pid){const f=getCart().find(i=>i.id===pid);return f?f.qty:0}
 function fee(){return 20}
 function getDisc(){try{return JSON.parse(localStorage.getItem(K_DISC))||null}catch(e){return null}}
 function setDisc(d){try{if(d)localStorage.setItem(K_DISC,JSON.stringify(d));else localStorage.removeItem(K_DISC)}catch(e){}}
-function discAmount(sub){const d=getDisc();if(!d||sub<=0)return 0;return Math.min(d.value,sub+fee())}
+function m2(n){return Math.round((Number(n)||0)*100)/100} // تقريب الفلوس لرقمين عشريين
+function fmtM(n){return String(m2(n))}
+function discAmount(sub){const d=getDisc();if(!d||sub<=0)return 0;return m2(Math.min(d.value,sub+fee()))}
 // ===== المظهر (داكن/فاتح) — محفوظ على الجهاز =====
 function getTheme(){try{return localStorage.getItem(K_THEME)||'dark'}catch(e){return 'dark'}}
 function applyTheme(){document.body.classList.toggle('light',getTheme()==='light')}
@@ -216,7 +218,7 @@ function render(){
   ${stores.map(s=>`<div class="store" onclick="go('store','${s.id}')">
    <div class="icon">${s.icon||'🏪'}</div>
    <div><h3>${esc(s.name)}</h3><div class="meta">${esc(s.cat)}</div>
-   <div class="meta"><span class="badge">⏱ ${esc(s.time)}</span><span class="badge">حد أدنى ${s.min} ج</span></div></div>
+   <div class="meta"><span class="badge">⏱ ${esc(s.time)}</span><span class="badge">حد أدنى ${fmtM(s.min)} ج</span></div></div>
   </div>`).join('')||'<div class="empty">مفيش محلات لسه</div>'}`;
  }
  else if(state.view==='store'){
@@ -227,11 +229,11 @@ function render(){
   app.innerHTML=`
   <button class="back" onclick="go('home')">→ رجوع للمحلات</button>
   <div class="panel"><h2>${s.icon||'🏪'} ${esc(s.name)}</h2>
-  <div class="sub">${esc(s.cat)} · ⏱ ${esc(s.time)} · حد أدنى ${s.min} ج</div></div>
+  <div class="sub">${esc(s.cat)} · ⏱ ${esc(s.time)} · حد أدنى ${fmtM(s.min)} ج</div></div>
   ${cats.length?`<div class="cattabs"><button class="ctab${cur?'':' on'}" onclick="setCat('${s.id}','')">الكل</button>${cats.map(c=>`<button class="ctab${cur===c?' on':''}" onclick="setCat('${s.id}','${c}')">${esc(c)}</button>`).join('')}</div>`:''}
   ${plist.map(p=>{const pid=s.id+'/'+p.id,q=cartQty(pid);return `<div class="prod">
    ${IMGMAP[pid]?`<img class="pimg" src="${esc(IMGMAP[pid])}" alt="" loading="lazy" onerror="this.remove()">`:''}
-   <div class="info"><div class="name">${esc(p.name)}</div><div class="unit">${esc(p.unit)}</div><div class="price">${p.price} ج</div></div>
+   <div class="info"><div class="name">${esc(p.name)}</div><div class="unit">${esc(p.unit)}</div><div class="price">${fmtM(p.price)} ج</div></div>
    ${q===0?`<button class="addbtn" onclick="addToCart('${pid}')">ضيف</button>`
     :`<div class="stepper"><button onclick="addToCart('${pid}')">+</button><span class="q">${q}</span><button onclick="decCart('${pid}')">−</button></div>`}
   </div>`}).join('')}`;
@@ -241,10 +243,11 @@ function render(){
   const rows=c.map(i=>{const p=findProd(i.id);if(!p)return'';sub+=p.price*i.qty;
    return `<div class="row"><span class="nm">${esc(p.name)} <small style="color:var(--muted)">(${esc(p.storeName)})</small></span>
    <div class="stepper"><button onclick="addToCart('${i.id}')">+</button><span class="q">${i.qty}</span><button onclick="decCart('${i.id}')">−</button></div>
-   <b style="min-width:60px;text-align:left">${p.price*i.qty} ج</b></div>`}).join('');
+   <b style="min-width:60px;text-align:left">${fmtM(p.price*i.qty)} ج</b></div>`}).join('');
+  sub=m2(sub);
   const d=getDisc();
   const disc=c.length?discAmount(sub):0;
-  const tot=Math.max(0,sub+(c.length?fee():0)-disc);
+  const tot=m2(Math.max(0,sub+(c.length?fee():0)-disc));
   app.innerHTML=`
   <button class="back" onclick="go('home')">→ كمّل تسوّق</button>
   <div class="panel"><h2>🧺 السلة</h2>
@@ -254,10 +257,10 @@ function render(){
     <button class="addbtn" id="discBtn" onclick="applyDiscount()">طبّق</button>
    </div>
    <div class="err" id="discMsg"></div>
-   <div class="totalrow" style="margin-top:10px"><span>المجموع</span><span>${sub} ج</span></div>
-   <div class="totalrow"><span>رسوم التوصيل</span><span>${fee()} ج</span></div>
-   ${disc>0?`<div class="totalrow" style="color:var(--gold2);font-weight:700"><span>خصم (${esc(d.code)}) <a onclick="rmDisc()" style="color:var(--red);cursor:pointer">✕</a></span><span>−${disc} ج</span></div>`:''}
-   <div class="totalrow grand"><span>الإجمالي</span><span>${tot} ج</span></div>
+   <div class="totalrow" style="margin-top:10px"><span>المجموع</span><span>${fmtM(sub)} ج</span></div>
+   <div class="totalrow"><span>رسوم التوصيل</span><span>${fmtM(fee())} ج</span></div>
+   ${disc>0?`<div class="totalrow" style="color:var(--gold2);font-weight:700"><span>خصم (${esc(d.code)}) <a onclick="rmDisc()" style="color:var(--red);cursor:pointer">✕</a></span><span>−${fmtM(disc)} ج</span></div>`:''}
+   <div class="totalrow grand"><span>الإجمالي</span><span>${fmtM(tot)} ج</span></div>
    <button class="cta" onclick="go('checkout')">كمّل الطلب</button>`
   :'<div class="empty">السلة فاضية 🛒<br><br><button class="addbtn" onclick="go(\'home\')">اتفرج على المحلات</button></div>'}
   </div>`;
@@ -298,8 +301,8 @@ function render(){
    <h2>طلبك اتسجّل يا ${esc(o.name.split(' ')[0])}! 🎉</h2>
    <p style="color:var(--muted)">رقم الطلب:</p>
    <div class="num">${o.id}</div>
-   ${o.discount>0?`<p style="color:var(--gold2);margin-top:8px;font-weight:700">🎟 اتحسب ليك خصم −${o.discount} ج</p>`:''}
-   <p style="color:var(--muted);margin-top:8px">الإجمالي: <b style="color:var(--text)">${o.total} ج</b> (${esc(o.payment)})</p>
+   ${o.discount>0?`<p style="color:var(--gold2);margin-top:8px;font-weight:700">🎟 اتحسب ليك خصم −${fmtM(o.discount)} ج</p>`:''}
+   <p style="color:var(--muted);margin-top:8px">الإجمالي: <b style="color:var(--text)">${fmtM(o.total)} ج</b> (${esc(o.payment)})</p>
    <p style="color:var(--muted);margin-top:4px">⏱ التوصيل خلال 45-60 دقيقة إن شاء الله</p>
    <p style="font-size:.8rem;color:var(--muted);margin-top:12px">هنتواصل معاك على رقمك لتأكيد الطلب.</p>
    <button class="cta" onclick="location.href='track.html?o=${o.id}'">📦 تابع حالة طلبك</button>
@@ -311,7 +314,7 @@ function render(){
   const orders=tok?getOrders():[];
   const name=tok?(()=>{try{return localStorage.getItem('alexshop_name')||''}catch(e){return ''}})():'';
   const phone=tok?(()=>{try{return localStorage.getItem('alexshop_phone')||''}catch(e){return ''}})():'';
-  const total=orders.reduce((a,o)=>a+(o.total||0),0);
+  const total=m2(orders.reduce((a,o)=>a+(o.total||0),0));
   const since=orders.length?new Date(orders[orders.length-1].ts).toLocaleDateString('ar-EG',{month:'long',year:'numeric'}):'—';
   const initial=name?name.trim()[0]:'👤';
   app.innerHTML=`
@@ -332,7 +335,7 @@ function render(){
    <button class="cta ghost" onclick="toggleAuth()">${authMode==='signup'?'عندك حساب؟ سجل دخولك':'جديد عندنا؟ اعمل حساب'}</button></div>`}
   ${tok?`<div class="stats">
    <div class="stat"><div class="v">${orders.length}</div><div class="k">طلبات</div></div>
-   <div class="stat"><div class="v">${total} ج</div><div class="k">إجمالي مشترياتك</div></div>
+   <div class="stat"><div class="v">${fmtM(total)} ج</div><div class="k">إجمالي مشترياتك</div></div>
    <div class="stat"><div class="v">${since}</div><div class="k">عميل منذ</div></div>
   </div>
   <div class="sec"><h2>آخر طلباتك</h2></div>
@@ -340,7 +343,7 @@ function render(){
    ${orders.slice(0,5).map(o=>`<div class="ordrow" onclick="location.href='track.html?o=${encodeURIComponent(o.id)}'">
     <div><div class="t">${esc(o.id)} · ${esc((o.stores||[]).join('، ')||'أليكس شوب')}</div>
     <div class="d">${new Date(o.ts).toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'})} · ${o.items||0} منتجات</div></div>
-    <span class="amt">${o.total} ج</span></div>`).join('')}
+    <span class="amt">${fmtM(o.total)} ج</span></div>`).join('')}
   </div>
   <div class="notecard">دوس على أي طلب عشان تتابع حالته.<br>طلباتك وبياناتك محفوظة على جهازك ده بس — مفيش حد يقدر يشوفها برقمك.</div>`
   :`<div class="empty">لسه مفيش طلبات من الجهاز ده 🌱<br><br><button class="addbtn" onclick="go('home')">ابدأ أول طلب</button></div>
@@ -543,8 +546,9 @@ async function placeOrder(){
  const items=c.map(i=>{const p=findProd(i.id);sub+=p.price*i.qty;return{name:p.name,price:p.price,qty:i.qty,store:p.storeName}});
  const pay=document.querySelector('input[name=pay]:checked').value;
  const d=getDisc();
+ sub=m2(sub);
  const disc=discAmount(sub);
- const total=Math.max(0,sub+fee()-disc);
+ const total=m2(Math.max(0,sub+fee()-disc));
  try{
   const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/place_order',{method:'POST',
    headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
